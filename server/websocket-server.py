@@ -8,11 +8,11 @@ async def echo(websocket):
         await websocket.send(message)
 
 
-async def main():
+async def startServer():
     async with serve(echo, "localhost", 8765) as server:
         await server.serve_forever()
 
 
 if __name__== "__main__":
-    asyncio.run(main())
+    asyncio.run(startServer())
 
