@@ -5,6 +5,6 @@ manager = []
 def control(connection, boltName):
     manager = Manager()
 
-    manager.setBoltApi(boltName)
-    manager.startApiForBolt(boltName)
+    manager.manageBolts([boltName])
+    # manager.startApiForBolt(boltName)
 

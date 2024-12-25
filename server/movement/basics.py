@@ -1,0 +1,2 @@
+def basicCurve():
+    pass

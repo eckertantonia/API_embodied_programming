@@ -9,7 +9,7 @@
             "name": "Python Debugger: Launch specific Python file",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/server/websocket-server.py",
+            "program": "${workspaceFolder}/server/websocket_server.py",
             "console": "integratedTerminal",
             "justMyCode": false
         }

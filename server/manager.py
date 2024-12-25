@@ -3,12 +3,14 @@ from spherov2 import scanner
 from spherov2.sphero_edu import SpheroEduAPI
 from spherov2.types import Color
 from bolt import Bolt
+from choreography import Choreography
+from typing import List
 import logging
 import time
 
 class Manager():
     def __init__(self):
-        self.bolts = []
+        self.bolts: List[Bolt] = []
         self.loop = self._getRunningLoop()
         
         # event um auf api verbindung zu warten
@@ -21,31 +23,49 @@ class Manager():
     def _getBoltFromList(self, name) -> Bolt:
         return next((bolt for bolt in self.bolts if bolt.name == name), None)
     
-    def setBoltApi(self, boltname):
+    def manageBolts(self, bolts: List[str]):
+        self.loop.create_task(self._manageBoltsAsync(bolts))
+        
+
+    async def _manageBoltsAsync(self, bolts:List[str]):
+        tasks = [self.setBoltApi(bolt) for bolt in bolts]
+        await asyncio.gather(*tasks)
+        self.connection_event.set()
+        
+        await self.startChoreo(self.bolts)
+    
+    async def setBoltApi(self, boltname):
 
         # Bolt schon in bolts[], dann verbindungsprozess abbrechen
         if self._getBoltFromList(boltname):
             print(f"{boltname} existiert schon!")
             return
 
-        self.loop.create_task(self.boltApiAsyncHelper(boltname))
-
-    async def boltApiAsyncHelper(self, boltname):
-        bolt = await self.createBolt(boltname)
-        self.connection_event.set()
+        bolt = await self._createBolt(boltname)
         self.bolts.append(bolt)
 
-    async def createBolt(self, boltname) -> Bolt:
+    async def _createBolt(self, boltname) -> Bolt:
         toy = await asyncio.get_event_loop().run_in_executor(None, lambda: scanner.find_toy(toy_name=boltname))
         if not toy:
             raise RuntimeError(f"Kein Bolt mit Namen '{boltname}' gefunden.")
         
-        self.logger.info(f"Gefunden: {toy.name} ({toy.address})")
+        print(f"Gefunden: {toy.name} ({toy.address})")
 
         bolt = Bolt(toy)
         bolt.setBoltApi()
 
+        
+
         return bolt
+    
+
+    async def startChoreo(self, boltGroup):
+        await self.connection_event.wait()
+        choreo = Choreography()
+        # TODO hardcodierte Choreografie austauschen
+        choreo.startChoreography(boltGroup, "move")
+
+
     
     def startApiForBolt(self, boltname):
         self.loop.create_task(self.startApiHelper(boltname))
