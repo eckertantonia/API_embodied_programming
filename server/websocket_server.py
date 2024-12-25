@@ -11,7 +11,7 @@ async def handler(websocket):
             data = await websocket.recv()
 
             # ab hier kommt dann komplette Logik
-            await decodeMessage(data)
+            decodeMessage(data)
 
             reply = f"Daten erhalten als: {data}"
             await websocket.send(reply)
@@ -26,7 +26,7 @@ async def handler(websocket):
 
 async def startServer():
     async with serve(handler, "localhost", 8765):
-        await asyncio.get_running_loop().create_future() # frun foreverr
+        await asyncio.get_running_loop().create_future() # run foreverr
 
 
 

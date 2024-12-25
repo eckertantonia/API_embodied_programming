@@ -1,7 +1,10 @@
 from manager import Manager
+import asyncio
 manager = []
 
-async def control(connection, boltName):
+def control(connection, boltName):
     manager = Manager()
 
-    await manager.connectBolt(boltName=boltName)
+    manager.setBoltApi(boltName)
+    manager.startApiForBolt(boltName)
+
