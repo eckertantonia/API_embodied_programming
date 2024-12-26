@@ -1,8 +1,10 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
+
+import numpy as np
 import time
 
-from bolt import Bolt
-from spherov2.types import Color
 
 def hermiteCurve(p0, p1, m0, m1, anzahl_punkte):
     """
@@ -18,9 +20,7 @@ def hermiteCurve(p0, p1, m0, m1, anzahl_punkte):
     Returns:
         list: Liste von Punkten (x, y) entlang der Kurve.
     """
-    # gleichmaessig verteiltes array mit num werten zwischen start und stop
-    # erzeugt werte fuer t entlang der kurve, 
-    # t ist array aus werten
+     
     t = np.linspace(0, 1, anzahl_punkte)
     
     # Hermite-Basisfunktionen
@@ -29,7 +29,7 @@ def hermiteCurve(p0, p1, m0, m1, anzahl_punkte):
     h01 = -2 * t**3 + 3 * t**2
     h11 = t**3 - t**2
     
-    # Punkte- und Tangenten-Tupel zerlegen
+    # Zerlege die Punkte und Tangenten
     x0, y0 = p0
     x1, y1 = p1
     dx0, dy0 = m0
@@ -53,13 +53,30 @@ def calculate_commands(points):
         commands.append((distance, angle))
     return commands
 
-# Sphero Bolt fahren lassen
-def drive_hermite_curve(robot, commands, speed=50):
-    # TODO LED auslagern
-    
-    for distance, angle in commands:
-        robot.set_matrix_character("|", color=Color(r=100, g=0, b=100))
-        robot.roll(int(angle), speed, (distance/speed))
-       # time.sleep(distance / speed)  # Warte proportional zur Strecke
-        robot.set_matrix_character("|", color=Color(r=0, g=100, b=100))
+if __name__ == "__main__":
+    # Beispiel: Hermitesche Kurve
+    p0 = (0, 0)       # Startpunkt
+    p1 = (1, 1)       # Endpunkt
+    m0 = (3, 0)       # Tangente am Start
+    m1 = (0, 1)       # Tangente am Ende
+    num_points = 100  # Anzahl der Punkte
+
+    hermite_curve = hermiteCurve(p0, p1, m0, m1, num_points)
+
+    # Zeichne die hermitesche Kurve
+x, y = zip(*hermite_curve)
+plt.plot(x, y, label="Hermite Curve", color="blue")
+
+# Markiere die Kontrollpunkte und Tangenten
+plt.scatter([p0[0], p1[0]], [p0[1], p1[1]], color="red", label="Control Points")
+plt.quiver(*p0, *m0, color="green", angles='xy', scale_units='xy', scale=1, label="Start Tangent")
+plt.quiver(*p1, *m1, color="orange", angles='xy', scale_units='xy', scale=1, label="End Tangent")
+
+plt.title("Hermite Curve")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.grid(True)
+plt.axis('equal')
+plt.show()
 

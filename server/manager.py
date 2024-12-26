@@ -63,7 +63,7 @@ class Manager():
         await self.connection_event.wait()
         choreo = Choreography()
         # TODO hardcodierte Choreografie austauschen
-        choreo.startChoreography(boltGroup, "move")
+        choreo.startChoreography(boltGroup, "kurve")
 
 
     

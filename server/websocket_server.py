@@ -10,6 +10,7 @@ async def handler(websocket):
         try:
             data = await websocket.recv()
 
+
             # ab hier kommt dann komplette Logik
             decodeMessage(data)
 
@@ -26,6 +27,7 @@ async def handler(websocket):
 
 async def startServer():
     async with serve(handler, "localhost", 8765):
+        print("server laeuft!")
         await asyncio.get_running_loop().create_future() # run foreverr
 
 
