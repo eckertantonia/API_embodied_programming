@@ -1,4 +1,5 @@
 {
-    "bolt-name": "SB-E118",
-    "connection": "create"
+    "bolt-name": "SB-34D5",
+    "movement": "move",
+    "strategy": "forward"
 }
