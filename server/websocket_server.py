@@ -3,7 +3,7 @@
 import asyncio
 from websockets.asyncio.server import serve
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
-from messaging.messaging_service import decodeMessage
+from messaging.messaging_service import decode_message
 
 
 async def handler(websocket):
@@ -12,7 +12,7 @@ async def handler(websocket):
             data = await websocket.recv()
 
             # ab hier kommt dann komplette Logik
-            decodeMessage(data)
+            decode_message(data)
 
             reply = f"Daten erhalten als: {data}"
             await websocket.send(reply)

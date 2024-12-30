@@ -1,5 +1,5 @@
 {
-    "bolt-name": "SB-34D5",
-    "movement": "move",
+    "robots": ["SB-34D5", "SB-E118", "SB-DAC2"],
+    "choreography": "move",
     "strategy": "forward"
 }

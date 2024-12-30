@@ -1,15 +1,24 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from typing import List
+
+from spherov2.types import Color
+
 from BoltGroup import BoltGroup
 from bolt import Bolt
-from spherov2.types import Color
-from typing import List
-import movement.basics as basicmoves
 from movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
-import time
-import asyncio
 
 STRATEGIES = {
     "forward": MoveForwardStrategy
 }
+
+
+def _get_strategy_instance(strategy):
+    strategy_class = STRATEGIES.get(strategy)
+    if strategy_class:
+        return strategy_class()
+    else:
+        raise ValueError("Unbekannte Strategie")
 
 
 class Choreography:
@@ -18,52 +27,31 @@ class Choreography:
         self.boltGroup = BoltGroup()
         self.loop = asyncio.get_running_loop()
 
-    def _get_strategy_instance(self, strategy):
-        strategy_class = STRATEGIES.get(strategy)
-        if strategy_class:
-            return strategy_class()
-        else:
-            raise ValueError("Unbekannte Strategie")
-
-    def startChoreography(self, boltGroup: List[Bolt], movement,  strategy: str):
-
-        strategy_instance = self._get_strategy_instance(strategy)
+    def start_choreography(self, bolt_group: List[Bolt], choreography, strategy: str):
 
         # Bolts als Gruppe definieren
-        for bolt in boltGroup:
-            self.boltGroup.assignBolt(bolt)
+        for bolt in bolt_group:
+            self.boltGroup.assign_bolt(bolt)
 
-        # Choreografie auswählen
-        if movement == "move":
-            bolt = self.boltGroup.bolts[0]
+        self.loop.create_task(self.choreo_async(strategy))
 
+    # TODO in choreography part auslagern?
+    async def choreo_async(self, strategy):
+        tasks = [self.task(strategy, bolt) for bolt in self.boltGroup]
+        await asyncio.gather(*tasks)
 
+    async def task(self, strategy, bolt):
+        print("task")
+        with ThreadPoolExecutor() as executor:
+            def sync_task():
+                try:
+                    with bolt.getApi() as bolt_api:
+                        bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
+                        strategy_instance = _get_strategy_instance(strategy)
+                        strategy_instance.drive(bolt_api)
 
-            with bolt.getApi() as robot:
-                strategy_instance.drive(robot)
+                except Exception as e:
+                    print(f"Error in sync_taks: {e}")
+                    raise
 
-        if movement == "kurve":
-            # Hermitesche Kurve definieren
-            points = [(0, 0), (0, 1), (0, 0)]  # [] von punkten
-
-            # points = [(0, 0), (0.25, 0.25), (0.5, 0), (0.75, -0.25), (1, 0)] # kreis
-
-            # basicmoves.plotSpline(points)
-
-            # Bolt die Kurve fahren lassen
-            # basicmoves.drive_hermite_curve(bolt,commands,70)
-            # kreis fahren = 4x drive hermite curve wiederholen
-            # TODO irgendwas stimmt mit winkel und geschwindigkeit noch nicht!!
-            # TODO Collision Error fangen
-
-            with bolt.getApi() as robot:
-                basicmoves.drive_hermite_curve(robot, points, 80)
-
-    # # Mapping für Strategien
-    # STRATEGIES = {
-    #     "forward": move_forward_strategy,
-    #     "backward": move_backward_strategy,
-    # }
-    #
-    # # Strategie auswählen
-    # selected_strategy = STRATEGIES["forward"]
+            await self.loop.run_in_executor(executor, sync_task)
