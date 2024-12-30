@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.8
 
 import asyncio
 from websockets.asyncio.server import serve
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 from messaging.messaging_service import decodeMessage
+
 
 async def handler(websocket):
     while True:
@@ -23,14 +24,11 @@ async def handler(websocket):
             break
 
 
-
 async def startServer():
     async with serve(handler, "localhost", 8765):
-        await asyncio.get_running_loop().create_future() # run foreverr
+        print("server laeuft!")
+        await asyncio.get_running_loop().create_future()  # run foreverr
 
 
-
-
-if __name__== "__main__":
+if __name__ == "__main__":
     asyncio.run(startServer())
-

@@ -1,6 +1,4 @@
-import asyncio
 from spherov2.sphero_edu import SpheroEduAPI
-import logging
 
 
 class Bolt:
@@ -16,5 +14,3 @@ class Bolt:
 
     def getApi(self) -> SpheroEduAPI:
         return self.toyApi
-
-    

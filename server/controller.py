@@ -1,10 +1,10 @@
 from manager import Manager
 import asyncio
+
 manager = []
 
-def control(connection, boltName):
+
+def control(boltName, movement, strategy):
     manager = Manager()
 
-    manager.manageBolts([boltName])
-    # manager.startApiForBolt(boltName)
-
+    manager.manageBolts([boltName], movement, strategy)
