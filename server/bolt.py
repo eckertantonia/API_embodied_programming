@@ -9,6 +9,10 @@ class Bolt:
         self.toy = toy
         self.toyApi = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
         self.listeners = {EventType.on_ir_message: []}  # Event-Listener für IR-Nachrichten
+        self.pos = None
+
+    def set_pos(self, x, y):
+        self.pos = (x, y)
 
     def setBoltApi(self):
         """Setzt die API für das Bolt Toy."""

@@ -110,7 +110,7 @@ def calculate_commands(points):
         x1, y1 = points[i - 1]
         x2, y2 = points[i]
         dx, dy = x2 - x1, y2 - y1
-        distance = np.sqrt(dx ** 2 + dy ** 2) * 100  # Skalierung der Distanz
+        distance = np.sqrt(dx ** 2 + dy ** 2) * 20  # Skalierung der Distanz
         angle = (np.degrees(np.arctan2(dy, dx)) + 360) % 360
         commands.append((distance, angle))
     return commands

@@ -1,9 +1,10 @@
 import asyncio
+import math
 from concurrent.futures import ThreadPoolExecutor
 
 from spherov2.types import Color
 from spherov2.sphero_edu import EventType
-
+import server.movement.basics as basic_moves
 
 class FlockChoreo():
     def __init__(self, robots):
@@ -11,11 +12,14 @@ class FlockChoreo():
         self.follower = robots[1]
         self.loop = asyncio.get_running_loop()
         self.executer = ThreadPoolExecutor()
-        self.message_received_event = asyncio.Event()
+        self.leader_pos_event = asyncio.Event()
+        self.leader_location = None
+        self.leader_heading = None
+        self.scale = 20 #cm, 20cm = 1 Einheit internes Koordinatensystem
 
     async def start_choreo(self):
         tasks = [
-            self.task(self.start_broadcasting, self.broadcaster),
+            self.task(self.start_leader, self.broadcaster),
             self.task(self.start_following, self.follower)
         ]
 
@@ -28,6 +32,8 @@ class FlockChoreo():
     def sync_task(self, strategy, bolt):
         try:
             with bolt.getApi() as bolt_api:
+                bolt_api.calibrate_compass()
+                bolt_api.set_compass_direction(0)
                 bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
 
                 coro = strategy(bolt_api, bolt)
@@ -37,45 +43,58 @@ class FlockChoreo():
             print(f"Error in sync_taks: {e}")
             raise
 
-    async def start_broadcasting(self, robot, bolt):
-        robot.start_ir_broadcast(0, 7)
-
-        for i in range(5):
-            robot_toy = robot._SpheroEduAPI__toy
-            robot_toy.send_robot_to_robot_infrared_message(
-                s=1,  # infrared_code Beispiel: "Ich bin hier"
-                s2=64,   # IR-Stärke vorne (0-64)
-                s3=0,     # Kein Signal nach links
-                s4=0,    # Kein Signal nach rechts
-                s5=0      # Kein Signal nach hinten
-            )
-
-            robot.send_ir_message(4, 10)
-            print(f"send ir message {i}")
-            await asyncio.sleep(5)
+    async def start_leader(self, robot, bolt):
+        robot.set_matrix_character("L", color=Color(r=100, g=0, b=100))
+        await asyncio.sleep(20)
+        bolt.set_pos(0, 0)
+        self.leader_location = bolt.pos
+        self.leader_heading = robot.get_heading()
+        print(f"leader location: {self.leader_location}")
+        print(f"leader compass direction: {robot.get_compass_direction()}")
+        self.leader_pos_event.set()
+        await asyncio.sleep(30)
 
     async def start_following(self, robot, bolt):
-        robot_toy = bolt
-        data = []
+        robot.set_matrix_character("F", color=Color(r=100, g=0, b=0))
+        await asyncio.sleep(10)
+        robot.set_matrix_character("F", color=Color(r=0, g=100, b=0))
+        bolt.set_pos(1, 1)
+        location = robot.get_location()
+        while location is math.nan:
+            location = robot.get_location()
+            if location is not math.nan:
+                break
+        heading = robot.get_heading()
+        points = [bolt.pos, (bolt.pos[0]+1, bolt.pos[1]), bolt.pos]
+        #basic_moves.drive_hermite_curve(robot, points)
+        await self.leader_pos_event.wait()
+        angle, speed, duration = await self.navigate_to_leaderpos(bolt.pos)
 
-        # Hier registrieren wir den IR-Nachricht-Listener
-        def ir_message_listener(toy, message):
-            print(f"IR Nachricht empfangen: {message}")
-            self.message_received_event.set()  # Signalisiert, dass eine Nachricht empfangen wurde
+        robot.roll(angle, speed, 2)
+        print("i roll...")
+        await asyncio.sleep(20)
 
-        # Registriere den Listener für das 'on_ir_message' Event
-        robot_toy.register_event(EventType.on_ir_message, ir_message_listener)
+    async def navigate_to_leaderpos(self, cur_pos):
+        speed_cm_per_sec = 40
 
-        # Starte die IR-Nachrichten-Verarbeitung und das Verfolgen
-        robot_toy.toy.listen_for_robot_to_robot_infrared_message(s=1, j=0)
-        robot.start_ir_follow(0, 7)
+        x1, y1 = cur_pos[0], cur_pos[1]
+        x2, y2 = self.leader_location[0], self.leader_location[1]
 
-        # Warte, bis eine IR-Nachricht empfangen wird
-        print("Warten auf IR-Nachricht...")
-        await self.message_received_event.wait()
+        # Berechnung Distanz
+        distance_units = math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
-        print("IR-Nachricht empfangen und Event gesetzt.")
+        distance_cm = distance_units * self.scale
 
-    def on_ir_message_received(self):
-        print(f"message received")
-        self.message_received_event.set()
+        # Berechnung Winkel (heading)
+        # TODO: die Winkel sich wack
+        angle = math.degrees(math.atan2(y2-y1, x2-x1))
+        if angle < 0:
+            angle += 360 # damit Winkel zwischen 0 und 360
+
+        # Zeit
+        duration = distance_cm / speed_cm_per_sec
+
+        speed = int(speed_cm_per_sec / speed_cm_per_sec * 255)
+        speed = max(min(speed, 255), 0)
+
+        return int(angle), speed, duration
