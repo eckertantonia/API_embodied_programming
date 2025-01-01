@@ -4,7 +4,7 @@ import asyncio
 manager = []
 
 
-def control(boltName, movement, strategy):
+def control(robots, movement, strategy):
     manager = Manager()
 
-    manager.manageBolts([boltName], movement, strategy)
+    manager.manage_bolts(robots, movement, strategy)

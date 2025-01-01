@@ -1,12 +1,12 @@
 import json
 from server.controller import control
 
-def decodeMessage(jsonData):
-    data = json.loads(jsonData)
 
-    movement = data["movement"]
-    boltName = data["bolt-name"]
+def decode_message(json_data):
+    data = json.loads(json_data)
+
+    choreography = data["choreography"]
+    robots = data["robots"]
     strategy = data["strategy"]
 
-    control(movement=movement, boltName=boltName, strategy=strategy )
-
+    control(robots, choreography, strategy)

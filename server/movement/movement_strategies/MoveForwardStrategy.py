@@ -1,14 +1,10 @@
-from server.movement.movement_strategies.MovementInterface import MovementInterface
-
 import server.movement.basics as basic_moves
+from server.movement.movement_strategies.MovementInterface import MovementInterface
 
 
 class MoveForwardStrategy(MovementInterface):
-    def __call__(self, *args, **kwds):
-        print("move forward")
 
     def drive(self, robot):
-        print("move methode")
-        points = [(0, 0), (1, 0)]  # [] von punkten
-
+        points = [(0, 0), (1, 0), (0, 0)]  # [] von Punkten
         basic_moves.drive_hermite_curve(robot, points)
+
