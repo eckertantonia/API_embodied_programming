@@ -7,6 +7,7 @@ from spherov2.types import Color
 from BoltGroup import BoltGroup
 from bolt import Bolt
 from movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
+from server.choreographies.FlockChoreo import FlockChoreo
 
 STRATEGIES = {
     "forward": MoveForwardStrategy
@@ -27,13 +28,21 @@ class Choreography:
         self.boltGroup = BoltGroup()
         self.loop = asyncio.get_running_loop()
 
-    def start_choreography(self, bolt_group: List[Bolt], choreography, strategy: str):
+    async def start_choreography(self, bolt_group: List[Bolt], choreography, strategy: str):
 
         # Bolts als Gruppe definieren
         for bolt in bolt_group:
             self.boltGroup.assign_bolt(bolt)
 
-        self.loop.create_task(self.choreo_async(strategy))
+        if choreography == "move":
+
+            self.loop.create_task(self.choreo_async(strategy))
+
+        elif choreography == "flock":
+            flock = FlockChoreo(self.boltGroup)
+
+            await flock.start_choreo()
+
 
     # TODO in choreography part auslagern?
     async def choreo_async(self, strategy):

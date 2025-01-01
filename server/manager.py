@@ -78,4 +78,4 @@ class Manager:
     async def _start_choreo(self, boltGroup, choreography, strategy):
         await self.connection_event.wait()
         choreo = Choreography()
-        choreo.start_choreography(boltGroup, choreography, strategy)
+        await choreo.start_choreography(boltGroup, choreography, strategy)
