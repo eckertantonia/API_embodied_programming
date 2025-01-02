@@ -11,9 +11,9 @@ class Bolt:
         self.listeners = {EventType.on_ir_message: []}  # Event-Listener für IR-Nachrichten
         self.position = (0, 0)  # Standard-Startposition
 
-    def update_position(self, x, y):
+    def update_position(self, new_pos):
         """Aktualisiert die Postion des Bolt."""
-        self.position = (x, y)
+        self.position = new_pos
 
     def get_spheroeduapi(self) -> SpheroEduAPI:
         """Gibt die SpheroEduApi-Instanz zu diesem Bolt zurück."""

@@ -9,8 +9,9 @@ from spherov2.types import Color
 
 class FlockChoreo():
     def __init__(self, robots):
-        self.broadcaster = robots[0]
-        self.follower = robots[1]
+        self.bolts = robots
+        self.leader = None
+        self.follower = []
         self.loop = asyncio.get_running_loop()
         self.executer = ThreadPoolExecutor()
         self.leader_pos_event = asyncio.Event()
@@ -19,12 +20,36 @@ class FlockChoreo():
         self.scale = 20  # cm, 20cm = 1 Einheit internes Koordinatensystem TODO: config-file
 
     async def start_choreo(self):
-        tasks = [
-            self.task(self.start_leader, self.broadcaster),
-            self.task(self.start_following, self.follower)
-        ]
 
-        await asyncio.gather(*tasks)
+        self.assign_pos()
+
+        flock_tasks = [
+                          self.task(self.start_leader, self.leader)
+                      ] + [
+                          self.task(self.start_following, following) for following in self.follower
+                      ]
+
+        await asyncio.gather(*flock_tasks)
+
+    def assign_pos(self):
+        positions = [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]
+
+        for bolt in self.bolts:
+            if bolt.name == "SB-E118":
+                bolt.update_position(positions[0])
+                self.leader = bolt
+            elif bolt.name == "SB-DAC2":
+                bolt.update_position(positions[1])
+                self.follower.append(bolt)
+            elif bolt.name == "SB-F545":
+                bolt.update_position(positions[2])
+                self.follower.append(bolt)
+            elif bolt.name == "SB-6476":
+                bolt.update_position(positions[3])
+                self.follower.append(bolt)
+            elif bolt.name == "SB-34D5":
+                bolt.update_position(positions[4])
+                self.follower.append(bolt)
 
     async def task(self, strategy, bolt):
         print("task")
@@ -48,36 +73,25 @@ class FlockChoreo():
 
     async def start_leader(self, robot, bolt):
         robot.set_matrix_character("L", color=Color(r=100, g=0, b=100))
-        bolt.update_position(0, 0)
 
         self.leader_location = bolt.position
         self.leader_heading = robot.get_heading()
         print(f"leader location: {self.leader_location}")
         print(f"leader compass direction: {robot.get_heading()}")
-        self.leader_pos_event.set()
-        await asyncio.sleep(30)
+
+        await asyncio.sleep(50)
 
     async def start_following(self, robot, bolt):
         robot.set_matrix_character("F", color=Color(r=100, g=0, b=0))
-        await asyncio.sleep(10)
+        await asyncio.sleep(30)
         robot.set_matrix_character("F", color=Color(r=0, g=100, b=0))
-        bolt.update_position(0, 1)
-
-        location = robot.get_location()
-        while location is math.nan:
-            location = robot.get_location()
-            if location is not math.nan:
-                break
-
-        await self.leader_pos_event.wait()
-        # angle, speed, duration = await self.navigate_to_leaderpos(bolt.position)
+        print(f"Bolt {bolt.name} an Pos {bolt.position}")
 
         move = MoveForwardStrategy()
 
         route_points = [bolt.position, self.leader_location]
 
         move.drive(robot, route_points, initial_heading=robot.get_heading())
-        # robot.roll(angle, speed, 2)
         print("i roll...")
         await asyncio.sleep(20)
 
