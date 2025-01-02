@@ -9,21 +9,17 @@ class Bolt:
         self.toy = toy
         self.toyApi = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
         self.listeners = {EventType.on_ir_message: []}  # Event-Listener für IR-Nachrichten
-        self.pos = None
+        self.position = (0, 0)  # Standard-Startposition
 
-    def set_pos(self, x, y):
-        self.pos = (x, y)
+    def update_position(self, x, y):
+        """Aktualisiert die Postion des Bolt."""
+        self.position = (x, y)
 
-    def setBoltApi(self):
-        """Setzt die API für das Bolt Toy."""
-        print(f"setBoltAPI")
-        self.toyApi = SpheroEduAPI(self.toy)
-        print(f"API gesetzt")
-
-    def getApi(self) -> SpheroEduAPI:
-        """Gibt die aktuelle API zurück."""
+    def get_spheroeduapi(self) -> SpheroEduAPI:
+        """Gibt die SpheroEduApi-Instanz zu diesem Bolt zurück."""
         return self.toyApi
 
+# TODO prüfen, ob gebraucht wird
     def register_event(self, event_type: EventType, listener: callable):
         """Registriert einen Event-Listener für ein bestimmtes Event."""
         if event_type not in self.listeners:

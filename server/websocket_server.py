@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.8
 
 import asyncio
+import logging
+
 from websockets.asyncio.server import serve
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 from messaging.messaging_service import decode_message
@@ -12,7 +14,7 @@ async def handler(websocket):
             data = await websocket.recv()
 
             # ab hier kommt dann komplette Logik
-            decode_message(data)
+            await decode_message(data)
 
             reply = f"Daten erhalten als: {data}"
             await websocket.send(reply)
@@ -27,8 +29,9 @@ async def handler(websocket):
 async def startServer():
     async with serve(handler, "localhost", 8765):
         print("server laeuft!")
-        await asyncio.get_running_loop().create_future()  # run foreverr
+        await asyncio.get_running_loop().create_future()  # run forever
 
 
 if __name__ == "__main__":
-    asyncio.run(startServer())
+    logging.basicConfig(level=logging.DEBUG)
+    asyncio.run(startServer(), debug=True)

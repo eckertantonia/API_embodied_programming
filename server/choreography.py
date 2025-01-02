@@ -28,7 +28,7 @@ class Choreography:
         self.boltGroup = BoltGroup()
         self.loop = asyncio.get_running_loop()
 
-    async def start_choreography(self, bolt_group: List[Bolt], choreography, strategy: str):
+    async def start_choreography(self, bolt_group: List[Bolt], choreography, strategy):
 
         # Bolts als Gruppe definieren
         for bolt in bolt_group:
@@ -51,13 +51,14 @@ class Choreography:
 
     async def task(self, strategy, bolt):
         print("task")
+        points = [(0, 0), (1, 0), (0, 0)]  # [] von Punkten
         with ThreadPoolExecutor() as executor:
             def sync_task():
                 try:
-                    with bolt.getApi() as bolt_api:
+                    with bolt.get_spheroeduapi() as bolt_api:
                         bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
                         strategy_instance = _get_strategy_instance(strategy)
-                        strategy_instance.drive(bolt_api)
+                        strategy_instance.drive(bolt_api, points)
 
                 except Exception as e:
                     print(f"Error in sync_taks: {e}")
