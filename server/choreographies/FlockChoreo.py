@@ -7,6 +7,7 @@ from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardS
 
 from spherov2.types import Color
 
+# TODO: Choreo oder Strategie?
 
 class FlockChoreo():
     def __init__(self, robots):
@@ -21,6 +22,10 @@ class FlockChoreo():
         self.scale = 20  # cm, 20cm = 1 Einheit internes Koordinatensystem TODO: config-file
 
     async def start_choreo(self):
+        """
+        Zuweisung von Task zu Bolt
+        :return:
+        """
 
         self.assign_pos()
 
@@ -33,6 +38,8 @@ class FlockChoreo():
         await asyncio.gather(*flock_tasks)
 
     def assign_pos(self):
+
+        # TODO: vorerst Helfer, muss an endgültige Choreo angepasst werden.
         positions = [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]
         # positions = [(0, 0),(0, -1)]
 
@@ -65,6 +72,8 @@ class FlockChoreo():
                 bolt.calibrate(bolt_api)
 
                 strategy = strategy(bolt_api, bolt)
+
+                #TODO: ist das Thread oder Coroutine?
                 asyncio.run_coroutine_threadsafe(strategy, self.loop).result()
 
         except asyncio.TimeoutError as timeout:

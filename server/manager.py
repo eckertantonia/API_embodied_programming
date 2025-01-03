@@ -16,6 +16,12 @@ class Manager:
         self.connection_event = asyncio.Event()
 
     def _check_robot_in_list(self, name) -> Bolt:
+        """
+        Sucht in self.bolts nach Bolt mit bestimmtem Namen.
+
+        :param name: string
+        :return: Bolt
+        """
         return next((bolt for bolt in self.bolts if bolt.name == name), None)
 
     async def manage_bolts(self, bolts, choreography, strategy):
@@ -33,7 +39,6 @@ class Manager:
         self.connection_event.set()
 
         await self._start_choreo(self.bolts, choreography, strategy)
-        # await self._manage_bolts_async(bolts, choreography, strategy)
 
     # brauch ich die methode noch?
     async def _manage_bolts_async(self, bolts, choreography, strategy):
@@ -66,6 +71,13 @@ class Manager:
         return bolt
 
     async def find_toy_with_retry(self, name):
+        """
+        Sucht nach Bolt mit bestimmter Bezeichnung. Wenn Bolt im ersten Versuch nicht gefunden wird, wird ein zweiter Versuch gestartet. Wenn auch im zweiten Versuch kein Bolt gefunden wird, dann wird eine Exception geworfen.
+        TODO: Exception pruefen, welche wird geworfen, welche muss gefangen werden, gibt man das im Methoden-Kopf an? Eigene Exception werfen?
+
+        :param name: string Bolt-Bezeichnung
+        :return:
+        """
         for attempt in range(2):  # Maximal zwei Versuche
             try:
                 toy = await asyncio.get_event_loop().run_in_executor(
@@ -81,6 +93,13 @@ class Manager:
         return None
 
     async def _start_choreo(self, robots, choreography, strategy):
+        """
+
+        :param robots: BoltGroup
+        :param choreography: string
+        :param strategy: string
+        :return:
+        """
         await self.connection_event.wait()
         choreo = Choreography()
         await choreo.start_choreography(robots, choreography, strategy)

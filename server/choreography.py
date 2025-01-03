@@ -13,7 +13,7 @@ STRATEGIES = {
     "forward": MoveForwardStrategy
 }
 
-
+# TODO: Strategien in Manager verwalten?
 def _get_strategy_instance(strategy):
     strategy_class = STRATEGIES.get(strategy)
     if strategy_class:
@@ -29,6 +29,14 @@ class Choreography:
         self.loop = asyncio.get_running_loop()
 
     async def start_choreography(self, bolt_group: List[Bolt], choreography, strategy):
+        """
+        Initialer Start jeder Choreographie.
+
+        :param bolt_group: List[Bolt], BoltGroup
+        :param choreography: string
+        :param strategy: string
+        :return:
+        """
 
         # Bolts als Gruppe definieren
         for bolt in bolt_group:
@@ -46,6 +54,11 @@ class Choreography:
 
     # TODO in choreography part auslagern?
     async def choreo_async(self, strategy):
+        """
+
+        :param strategy: MovementStrategy
+        :return:
+        """
         tasks = [self.task(strategy, bolt) for bolt in self.boltGroup]
         await asyncio.gather(*tasks)
 
