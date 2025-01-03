@@ -1,5 +1,5 @@
 {
-    "robots": ["SB-E118", "SB-6476"],
+    "robots": ["SB-E118", "SB-DAC2", "SB-F545", "SB-6476", "SB-34D5"],
     "choreography": "flock",
     "strategy": ""
 }

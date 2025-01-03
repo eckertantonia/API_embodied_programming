@@ -1,5 +1,6 @@
 import asyncio
 import math
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
@@ -32,26 +33,26 @@ class FlockChoreo():
         await asyncio.gather(*flock_tasks)
 
     def assign_pos(self):
-        # positions = [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]
-        positions = [(0, 0),(0, -1)]
+        positions = [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]
+        # positions = [(0, 0),(0, -1)]
 
         for bolt in self.bolts:
             if bolt.name == "SB-E118":
                 bolt.update_position(positions[0])
                 self.leader = bolt
                 self.leader_location = bolt.position
-            # elif bolt.name == "SB-DAC2":
-            #     bolt.update_position(positions[1])
-            #     self.follower.append(bolt)
-            # elif bolt.name == "SB-F545":
-            #     bolt.update_position(positions[2])
-            #     self.follower.append(bolt)
-            elif bolt.name == "SB-6476":
+            elif bolt.name == "SB-DAC2":
                 bolt.update_position(positions[1])
                 self.follower.append(bolt)
-            # elif bolt.name == "SB-34D5":
-            #     bolt.update_position(positions[4])
-            #     self.follower.append(bolt)
+            elif bolt.name == "SB-F545":
+                bolt.update_position(positions[2])
+                self.follower.append(bolt)
+            elif bolt.name == "SB-6476":
+                bolt.update_position(positions[3])
+                self.follower.append(bolt)
+            elif bolt.name == "SB-34D5":
+                bolt.update_position(positions[4])
+                self.follower.append(bolt)
 
     async def task(self, strategy, bolt):
         await self.loop.run_in_executor(self.executer, self.sync_task, strategy, bolt)
@@ -61,7 +62,9 @@ class FlockChoreo():
         try:
             with bolt.get_spheroeduapi() as bolt_api:
                 bolt_api.calibrate_compass()
+                time.sleep(2)
                 bolt_api.set_compass_direction(0)
+                bolt_api.reset_aim()
 
                 strategy = strategy(bolt_api, bolt)
                 asyncio.run_coroutine_threadsafe(strategy, self.loop).result()
@@ -79,14 +82,14 @@ class FlockChoreo():
             self.leader_location = bolt.position
             self.leader_heading = robot.get_heading()
             print(f"leader location: {self.leader_location}")
-            # await asyncio.sleep(30)
+            await asyncio.sleep(30)
         except Exception as e:
             print(f"Exception in start_leader with Bolt {bolt.name}: {e}")
 
     async def start_following(self, robot, bolt):
         try:
             robot.set_matrix_character("F", color=Color(r=100, g=0, b=0))
-            await asyncio.sleep(3)
+
             print(f"Bolt {bolt.name} an Pos {bolt.position}")
 
             move = MoveForwardStrategy()
@@ -94,10 +97,9 @@ class FlockChoreo():
             if self.leader_location is not None:
 
                 route_points = [bolt.position, self.leader_location]
-                # robot.set_heading(0)
                 robot.set_matrix_character("F", color=Color(r=0, g=100, b=0))
                 await asyncio.sleep(3)
-                print(f"heading: {robot.get_heading()}")
+
                 move.drive(robot, route_points, initial_heading=robot.get_heading())
                 print("i roll...")
                 await asyncio.sleep(10)
