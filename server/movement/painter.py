@@ -41,42 +41,52 @@ def hermiteCurve(p0, p1, m0, m1, anzahl_punkte):
     
     return list(zip(x, y))
 
-# Bewegungsbefehl berechnen
-def calculate_commands(points):
-    commands = []
-    for i in range(1, len(points)):
-        x1, y1 = points[i-1]
-        x2, y2 = points[i]
-        dx, dy = x2 - x1, y2 - y1
-        distance = np.sqrt(dx**2 + dy**2) * 100  # Skalierung der Distanz
-        angle = (np.degrees(np.arctan2(dy, dx)) + 360) % 360
-        commands.append((distance, angle))
-    return commands
+
+def claculateSplinePoints(wegpunkte):
+
+    # kurve1 berechnen aus p0,p1
+
+    # kurve2 berechnen aus p1,p2
+
+    # usw: kurve berechnen aus px und px+1, dann nächstes x
+
+    for i in len(wegpunkte):
+        p0 = wegpunkte[i]
+        p1 = wegpunkte[i+1]
+
+        curve = hermite_curve(p0, p1)
+
+    pass
 
 if __name__ == "__main__":
     # Beispiel: Hermitesche Kurve
-    p0 = (0, 0)       # Startpunkt
-    p1 = (1, 1)       # Endpunkt
-    m0 = (3, 0)       # Tangente am Start
-    m1 = (0, 1)       # Tangente am Ende
-    num_points = 100  # Anzahl der Punkte
+    p0 = (0, 0)
+    m0 = (1,0)       # Startpunkt
+    p1 = (1, 1)
+    m1= (0,1)
+    p2 = (0,2)
+    m2=(0, -1)
 
-    hermite_curve = hermiteCurve(p0, p1, m0, m1, num_points)
+    num_points = 10  # Anzahl der Punkte
+
+    hermite_curve = hermiteCurve(p1, p2, m1, m2, num_points)
+
+    #spline = claculateSplinePoints([hermite_curve, curve2])
 
     # Zeichne die hermitesche Kurve
-x, y = zip(*hermite_curve)
-plt.plot(x, y, label="Hermite Curve", color="blue")
+    x, y = zip(*hermite_curve)
+    plt.plot(x, y, label="Hermite Curve", color="blue")
 
-# Markiere die Kontrollpunkte und Tangenten
-plt.scatter([p0[0], p1[0]], [p0[1], p1[1]], color="red", label="Control Points")
-plt.quiver(*p0, *m0, color="green", angles='xy', scale_units='xy', scale=1, label="Start Tangent")
-plt.quiver(*p1, *m1, color="orange", angles='xy', scale_units='xy', scale=1, label="End Tangent")
+    # Markiere die Kontrollpunkte und Tangenten
+    plt.scatter([p1[0], p2[0]], [p1[1], p2[1]], color="red", label="Control Points")
+    plt.quiver(*p1, *m1, color="green", angles='xy', scale_units='xy', scale=1, label="Start Tangent")
+    plt.quiver(*p2, *m2, color="orange", angles='xy', scale_units='xy', scale=1, label="End Tangent")
 
-plt.title("Hermite Curve")
-plt.xlabel("x")
-plt.ylabel("y")
-plt.legend()
-plt.grid(True)
-plt.axis('equal')
-plt.show()
+    plt.title("Hermite Curve")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.grid(True)
+    plt.axis('equal')
+    plt.show()
 

@@ -33,5 +33,5 @@ async def startServer():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    # logging.basicConfig(level=logging.DEBUG)
     asyncio.run(startServer(), debug=True)

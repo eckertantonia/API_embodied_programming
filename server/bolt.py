@@ -17,7 +17,11 @@ class Bolt:
 
     def get_spheroeduapi(self) -> SpheroEduAPI:
         """Gibt die SpheroEduApi-Instanz zu diesem Bolt zurück."""
-        return self.toyApi
+        try:
+            return self.toyApi
+        except Exception as e:
+            print(f"Exception in Bolt.get_spheroeduapi: {e}")
+            raise
 
 # TODO prüfen, ob gebraucht wird
     def register_event(self, event_type: EventType, listener: callable):

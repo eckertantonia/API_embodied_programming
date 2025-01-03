@@ -129,14 +129,14 @@ def calculate_commands(points):
         x1, y1 = points[i - 1]
         x2, y2 = points[i]
         dx, dy = x2 - x1, y2 - y1
-        distance = np.sqrt(dx ** 2 + dy ** 2) * 20  # Skalierung der Distanz
+        distance = np.sqrt(dx ** 2 + dy ** 2) *10 # Skalierung der Distanz
         angle = (360 - math.degrees(math.atan2(dy, dx))) % 360
         commands.append((distance, angle))
     return commands
 
 
 # Sphero Bolt fahren lassen
-def drive_hermite_curve(robot, points, speed=80, initial_heading=None):
+def drive_hermite_curve(robot, points, speed=50, initial_heading=None):
     """
 
     :param initial_heading:
@@ -145,18 +145,20 @@ def drive_hermite_curve(robot, points, speed=80, initial_heading=None):
     :param speed: default 80, damit faehrt der Bolt von Punkt (0,0) zu Punkt (0,1) ca 1m
     :return:
     """
+    try:
+        anzahl_punkte = 5
+        tangents = calculate_tangents(points, initial_heading=initial_heading)
 
-    anzahl_punkte = 10
-    tangents = calculate_tangents(points, initial_heading=initial_heading)
+        spline = calculate_hermite_spline(points, tangents, anzahl_punkte)
+        commands = calculate_commands(spline)
 
-    spline = calculate_hermite_spline(points, tangents, anzahl_punkte)
-    commands = calculate_commands(spline)
+        _basic_drive(robot, commands, speed)
+    except Exception as e:
+        print(f"Exception in drive_hermite_curve: {e}")
+        raise
 
-    # TODO LED auslagern
-    _basic_drive(robot, commands, speed)
 
-
-def _basic_drive(robot, commands, speed=80):
+def _basic_drive(robot, commands, speed=50):
     """
     holt Schwung und bremst ab
     :param robot:
@@ -169,19 +171,22 @@ def _basic_drive(robot, commands, speed=80):
 
     # schwung holen
     # robot.set_matrix_character("A", color=Color(r=100, g=0, b=100))
-    robot.set_heading(int(first_angle))
-    robot.roll(int(first_angle), int(-speed / 4), 0.5)
-    robot.set_heading(int(first_angle))
+    # robot.set_heading(int(first_angle))
+    # robot.roll(int(first_angle), int(-speed / 4), 0.5)
+    # robot.set_heading(int(first_angle))
     # robot.roll(int(first_angle), int(speed), (first_distance/ speed))
 
     for distance, angle in commands:
-        robot.roll(int(angle), speed, (distance / speed))
+        duration = (distance / speed)
+        print(f"duration {duration}")
+        print(f"angle {angle}")
+        robot.roll(int(angle), speed, 0.2)
         # time.sleep(distance / speed)  # Warte proportional zur Strecke
 
     # abbremsen
     # TODO in Uni auf Teppich ohne Hindernisse probieren
-    robot.roll(int(last_angle), int(-speed / 4), 0.5)
-    robot.set_heading(int(last_angle))
+    #  robot.roll(int(last_angle), int(-speed / 4), 0.5)
+    # robot.set_heading(int(last_angle))
 
 
 def plotSpline(points, initial_heading):

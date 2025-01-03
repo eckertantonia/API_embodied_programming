@@ -32,27 +32,28 @@ class FlockChoreo():
         await asyncio.gather(*flock_tasks)
 
     def assign_pos(self):
-        positions = [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]
+        # positions = [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]
+        positions = [(0, 0),(0, -1)]
 
         for bolt in self.bolts:
             if bolt.name == "SB-E118":
                 bolt.update_position(positions[0])
                 self.leader = bolt
-            elif bolt.name == "SB-DAC2":
+                self.leader_location = bolt.position
+            # elif bolt.name == "SB-DAC2":
+            #     bolt.update_position(positions[1])
+            #     self.follower.append(bolt)
+            # elif bolt.name == "SB-F545":
+            #     bolt.update_position(positions[2])
+            #     self.follower.append(bolt)
+            elif bolt.name == "SB-6476":
                 bolt.update_position(positions[1])
                 self.follower.append(bolt)
-            elif bolt.name == "SB-F545":
-                bolt.update_position(positions[2])
-                self.follower.append(bolt)
-            elif bolt.name == "SB-6476":
-                bolt.update_position(positions[3])
-                self.follower.append(bolt)
-            elif bolt.name == "SB-34D5":
-                bolt.update_position(positions[4])
-                self.follower.append(bolt)
+            # elif bolt.name == "SB-34D5":
+            #     bolt.update_position(positions[4])
+            #     self.follower.append(bolt)
 
     async def task(self, strategy, bolt):
-        print("task")
         await self.loop.run_in_executor(self.executer, self.sync_task, strategy, bolt)
 
     def sync_task(self, strategy, bolt):
@@ -61,39 +62,49 @@ class FlockChoreo():
             with bolt.get_spheroeduapi() as bolt_api:
                 bolt_api.calibrate_compass()
                 bolt_api.set_compass_direction(0)
-                # bolt_api.set_heading(0)
-                bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
 
                 strategy = strategy(bolt_api, bolt)
                 asyncio.run_coroutine_threadsafe(strategy, self.loop).result()
 
+        except asyncio.TimeoutError as timeout:
+            print(f"TimeoutError in sync_task for Bolt {bolt.name}: {timeout}")
         except Exception as e:
             print(f"Error in sync_taks: {e}")
             raise
 
     async def start_leader(self, robot, bolt):
-        robot.set_matrix_character("L", color=Color(r=100, g=0, b=100))
+        try:
+            robot.set_matrix_character("L", color=Color(r=100, g=0, b=100))
 
-        self.leader_location = bolt.position
-        self.leader_heading = robot.get_heading()
-        print(f"leader location: {self.leader_location}")
-        print(f"leader compass direction: {robot.get_heading()}")
-
-        await asyncio.sleep(50)
+            self.leader_location = bolt.position
+            self.leader_heading = robot.get_heading()
+            print(f"leader location: {self.leader_location}")
+            # await asyncio.sleep(30)
+        except Exception as e:
+            print(f"Exception in start_leader with Bolt {bolt.name}: {e}")
 
     async def start_following(self, robot, bolt):
-        robot.set_matrix_character("F", color=Color(r=100, g=0, b=0))
-        await asyncio.sleep(30)
-        robot.set_matrix_character("F", color=Color(r=0, g=100, b=0))
-        print(f"Bolt {bolt.name} an Pos {bolt.position}")
+        try:
+            robot.set_matrix_character("F", color=Color(r=100, g=0, b=0))
+            await asyncio.sleep(3)
+            print(f"Bolt {bolt.name} an Pos {bolt.position}")
 
-        move = MoveForwardStrategy()
+            move = MoveForwardStrategy()
 
-        route_points = [bolt.position, self.leader_location]
+            if self.leader_location is not None:
 
-        move.drive(robot, route_points, initial_heading=robot.get_heading())
-        print("i roll...")
-        await asyncio.sleep(20)
+                route_points = [bolt.position, self.leader_location]
+                # robot.set_heading(0)
+                robot.set_matrix_character("F", color=Color(r=0, g=100, b=0))
+                await asyncio.sleep(3)
+                print(f"heading: {robot.get_heading()}")
+                move.drive(robot, route_points, initial_heading=robot.get_heading())
+                print("i roll...")
+                await asyncio.sleep(10)
+            else:
+                print("No leader")
+        except Exception as e:
+            print(f"Exception in start_following with Bolt {bolt.name}: {e}")
 
     async def navigate_to_leaderpos(self, cur_pos):
         speed_cm_per_sec = 40
