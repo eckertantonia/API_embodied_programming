@@ -10,6 +10,7 @@ class Bolt:
         self.toyApi = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
         self.listeners = {EventType.on_ir_message: []}  # Event-Listener für IR-Nachrichten
         self.position = (0, 0)  # Standard-Startposition
+        self.offset = 0 # Default 0, TODO berechnen
 
     def update_position(self, new_pos):
         """Aktualisiert die Postion des Bolt."""
@@ -22,6 +23,10 @@ class Bolt:
         except Exception as e:
             print(f"Exception in Bolt.get_spheroeduapi: {e}")
             raise
+
+    def calculate_offset(self):
+        offset = 0 - self.toyApi._SpheroEduAPI__compass_zero
+        self.offset = (offset + 360) % 360
 
 # TODO prüfen, ob gebraucht wird
     def register_event(self, event_type: EventType, listener: callable):

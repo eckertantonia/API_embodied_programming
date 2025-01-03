@@ -114,12 +114,13 @@ def calculate_tangents(points, initial_heading=None):
 
 
 # Bewegungsbefehl berechnen
-def calculate_commands(points):
+def calculate_commands(points, compass_offset=0):
     """
     Berechnet Bewegungsbefehle basierend auf Punkten.
 
     Parameters:
         points (list): Liste von Punkten [(x0, y0), (x1, y1), ...].
+        compass_offset (float): Offset des Roboters im globalen Koordinatensystem (in Grad).
 
     Returns:
         list: Liste von Bewegungsbefehlen [(distance, angle_in_degrees), ...].
@@ -131,26 +132,33 @@ def calculate_commands(points):
         dx, dy = x2 - x1, y2 - y1
         distance = np.sqrt(dx ** 2 + dy ** 2) *10 # Skalierung der Distanz
         angle = (360 - math.degrees(math.atan2(dy, dx))) % 360
-        commands.append((distance, angle))
+        # Transformiere Winkel ins globale Koordinatensystem
+        global_angle = (angle + compass_offset) % 360
+        commands.append((distance, global_angle))
     return commands
 
 
 # Sphero Bolt fahren lassen
-def drive_hermite_curve(robot, points, speed=50, initial_heading=None):
+def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_offset=0):
     """
+    Fährt eine Hermite-Kurve mit dem Roboter.
 
-    :param initial_heading:
-    :param robot:
-    :param points:
-    :param speed: default 80, damit faehrt der Bolt von Punkt (0,0) zu Punkt (0,1) ca 1m
-    :return:
+    Parameters:
+        robot: Der Roboter, der die Bewegung ausführt.
+        points (list): Liste von Punkten [(x0, y0), (x1, y1), ...].
+        speed (int): Geschwindigkeit der Bewegung.
+        initial_heading (float): Anfangsrichtung des Roboters.
+        compass_offset (float): Offset des Roboters im globalen Koordinatensystem (in Grad).
+
+    Returns:
+        None
     """
     try:
         anzahl_punkte = 5
         tangents = calculate_tangents(points, initial_heading=initial_heading)
 
         spline = calculate_hermite_spline(points, tangents, anzahl_punkte)
-        commands = calculate_commands(spline)
+        commands = calculate_commands(spline, compass_offset=compass_offset)
 
         _basic_drive(robot, commands, speed)
     except Exception as e:

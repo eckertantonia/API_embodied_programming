@@ -76,6 +76,7 @@ class Manager:
                 print(f"Versuch {attempt + 1}: Kein Spielzeug gefunden. Wiederholen...")
             except scanner.ToyNotFoundError as e:
                 print(f"Fehler bei Versuch {attempt + 1}: \"{e}\" für Spielzeug \"{name}\"")
+                raise
             await asyncio.sleep(1)  # Kurze Pause vor erneutem Versuch
         return None
 

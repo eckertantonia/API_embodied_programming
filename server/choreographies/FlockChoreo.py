@@ -61,7 +61,7 @@ class FlockChoreo():
         # synchrone Methode, weil SpheroEduApi synchron ist
         try:
             with bolt.get_spheroeduapi() as bolt_api:
-                self.calibrate(bolt_api)
+                self.calibrate(bolt_api, bolt)
 
 
                 strategy = strategy(bolt_api, bolt)
@@ -73,11 +73,12 @@ class FlockChoreo():
             print(f"Error in sync_taks: {e}")
             raise
 
-    def calibrate(self, robot):
+    def calibrate(self, robot, bolt):
         robot.calibrate_compass()
         robot.reset_aim()
         time.sleep(2)
         robot.set_compass_direction(0)
+        bolt.calculate_offset()
 
     async def start_leader(self, robot, bolt):
         try:
@@ -106,6 +107,7 @@ class FlockChoreo():
                 print(f"{bolt.name} heading: {robot.get_heading()}")
                 move.drive(robot, route_points, initial_heading=robot.get_heading())
                 print("i roll...")
+                bolt.update_position(route_points[-1])
                 await asyncio.sleep(10)
             else:
                 print("No leader")
