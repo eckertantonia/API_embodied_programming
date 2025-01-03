@@ -1,3 +1,5 @@
+import time
+
 from spherov2.sphero_edu import SpheroEduAPI, EventType
 
 import threading
@@ -24,9 +26,18 @@ class Bolt:
             print(f"Exception in Bolt.get_spheroeduapi: {e}")
             raise
 
+    def calibrate(self, running_api):
+        running_api.calibrate_compass()
+        self.offset = running_api._SpheroEduAPI__compass_zero
+        time.sleep(2)
+
+        # running_api.set_compass_direction(0)
+        #self.calculate_offset()
+
     def calculate_offset(self):
         offset = 0 - self.toyApi._SpheroEduAPI__compass_zero
-        self.offset = (offset + 360) % 360
+        self.offset = (offset) % 360
+        print(f"{self.name} offset: {self.offset}")
 
 # TODO prüfen, ob gebraucht wird
     def register_event(self, event_type: EventType, listener: callable):

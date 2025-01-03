@@ -51,14 +51,15 @@ class Choreography:
 
     async def task(self, strategy, bolt):
         print("task")
-        points = [(0, 0), (1, 0), (0, 0)]  # [] von Punkten
+        points = [(0, 1), (0, 0)]  # [] von Punkten
         with ThreadPoolExecutor() as executor:
             def sync_task():
                 try:
                     with bolt.get_spheroeduapi() as bolt_api:
+                        bolt.calibrate(bolt_api)
                         bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
                         strategy_instance = _get_strategy_instance(strategy)
-                        strategy_instance.drive(bolt_api, points)
+                        strategy_instance.drive(bolt_api, points, offset=bolt.offset)
 
                 except Exception as e:
                     print(f"Error in sync_taks: {e}")

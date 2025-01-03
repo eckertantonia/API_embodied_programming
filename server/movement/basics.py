@@ -114,7 +114,7 @@ def calculate_tangents(points, initial_heading=None):
 
 
 # Bewegungsbefehl berechnen
-def calculate_commands(points, compass_offset=0):
+def calculate_commands(points, compass_offset):
     """
     Berechnet Bewegungsbefehle basierend auf Punkten.
 
@@ -186,8 +186,7 @@ def _basic_drive(robot, commands, speed=50):
 
     for distance, angle in commands:
         duration = (distance / speed)
-        print(f"duration {duration}")
-        print(f"angle {angle}")
+        # robot.scroll_matrix_text(str(angle), Color(r=0, g=100, b=0), 5, False)
         robot.roll(int(angle), speed, 0.2)
         # time.sleep(distance / speed)  # Warte proportional zur Strecke
 
