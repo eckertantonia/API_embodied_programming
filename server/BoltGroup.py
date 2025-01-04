@@ -15,3 +15,7 @@ class BoltGroup:
     def __iter__(self) -> Iterator[Bolt]:
         """Return an iterator over the bolts in the group."""
         return iter(self.bolts)
+
+    def __getitem__(self, index: int) -> Bolt:
+        """Retrieve a bolt by index."""
+        return self.bolts[index]

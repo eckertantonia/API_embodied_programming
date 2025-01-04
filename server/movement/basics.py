@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -77,22 +79,30 @@ def calculate_hermite_spline(points, tangents, anzahl_punkte):
     return spline_points
 
 
-def calculate_tangents(points):
+def calculate_tangents(points, initial_heading=None):
     """
-        Berechnet Tangentenvektoren f\u00fcr eine gegebene Liste von Punkten.
+    Berechnet Tangentenvektoren für eine gegebene Liste von Punkten.
 
-        Parameters:
-            points (list): Liste von Punkten [(x0, y0), (x1, y1), ...].
+    Parameters:
+        points (list): Liste von Punkten [(x0, y0), (x1, y1), ...].
+        initial_heading (float, optional): Ausrichtung in Grad am Startpunkt
 
-        Returns:
-            list: Liste von Tangenten [(dx0, dy0), (dx1, dy1), ...].
-        """
+    Returns:
+        list: Liste von Tangenten [(dx0, dy0), (dx1, dy1), ...].
+    """
     tangents = []
     n = len(points)
 
     for i in range(n):
         if i == 0:  # Vorwärtsdifferenz am Anfang
-            dx, dy = points[i + 1][0] - points[i][0], points[i + 1][1] - points[i][1]
+            if initial_heading is not None:
+                # Initialer Tangentenvektor basierend auf der Orientierung
+                angle_deg = initial_heading
+                dx = math.cos(math.radians(angle_deg))
+                dy = math.sin(math.radians(angle_deg))
+            else:
+                # Vorwärtsdifferenz, wenn keine Orientierung gegeben ist
+                dx, dy = points[i + 1][0] - points[i][0], points[i + 1][1] - points[i][1]
         elif i == n - 1:  # Rückwärtsdifferenz am Ende
             dx, dy = points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]
         else:  # Zentrale Differenz für mittlere Punkte
@@ -104,39 +114,59 @@ def calculate_tangents(points):
 
 
 # Bewegungsbefehl berechnen
-def calculate_commands(points):
+def calculate_commands(points, compass_offset):
+    """
+    Berechnet Bewegungsbefehle basierend auf Punkten.
+
+    Parameters:
+        points (list): Liste von Punkten [(x0, y0), (x1, y1), ...].
+        compass_offset (float): Offset des Roboters im globalen Koordinatensystem (in Grad).
+
+    Returns:
+        list: Liste von Bewegungsbefehlen [(distance, angle_in_degrees), ...].
+    """
     commands = []
     for i in range(1, len(points)):
         x1, y1 = points[i - 1]
         x2, y2 = points[i]
         dx, dy = x2 - x1, y2 - y1
-        distance = np.sqrt(dx ** 2 + dy ** 2) * 100  # Skalierung der Distanz
-        angle = (np.degrees(np.arctan2(dy, dx)) + 360) % 360
-        commands.append((distance, angle))
+        distance = np.sqrt(dx ** 2 + dy ** 2) *10 # Skalierung der Distanz
+        angle = (360 - math.degrees(math.atan2(dy, dx))) % 360
+        # Transformiere Winkel ins globale Koordinatensystem
+        global_angle = (angle + compass_offset) % 360
+        commands.append((distance, global_angle))
     return commands
 
 
 # Sphero Bolt fahren lassen
-def drive_hermite_curve(robot, points, speed=80):
+def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_offset=0):
     """
+    Fährt eine Hermite-Kurve mit dem Roboter.
 
-    :param robot:
-    :param points:
-    :param speed: default 80, damit faehrt der Bolt von Punkt (0,0) zu Punkt (0,1) ca 1m
-    :return:
+    Parameters:
+        robot: Der Roboter, der die Bewegung ausführt.
+        points (list): Liste von Punkten [(x0, y0), (x1, y1), ...].
+        speed (int): Geschwindigkeit der Bewegung.
+        initial_heading (float): Anfangsrichtung des Roboters.
+        compass_offset (float): Offset des Roboters im globalen Koordinatensystem (in Grad).
+
+    Returns:
+        None
     """
+    try:
+        anzahl_punkte = 5
+        tangents = calculate_tangents(points, initial_heading=initial_heading)
 
-    anzahl_punkte = 10
-    tangents = calculate_tangents(points)
+        spline = calculate_hermite_spline(points, tangents, anzahl_punkte)
+        commands = calculate_commands(spline, compass_offset=compass_offset)
 
-    spline = calculate_hermite_spline(points, tangents, anzahl_punkte)
-    commands = calculate_commands(spline)
+        _basic_drive(robot, commands, speed)
+    except Exception as e:
+        print(f"Exception in drive_hermite_curve: {e}")
+        raise
 
-    # TODO LED auslagern
-    _basic_drive(robot, commands, speed)
 
-
-def _basic_drive(robot, commands, speed=80):
+def _basic_drive(robot, commands, speed=50):
     """
     holt Schwung und bremst ab
     :param robot:
@@ -148,23 +178,25 @@ def _basic_drive(robot, commands, speed=80):
     last_distance, last_angle = commands[-1]
 
     # schwung holen
-    robot.set_matrix_character("A", color=Color(r=100, g=0, b=100))
-    robot.set_heading(int(first_angle))
-    robot.roll(int(first_angle), int(-speed/4), 0.5)
-    robot.set_heading(int(first_angle))
-    #robot.roll(int(first_angle), int(speed), (first_distance/ speed))
+    # robot.set_matrix_character("A", color=Color(r=100, g=0, b=100))
+    # robot.set_heading(int(first_angle))
+    # robot.roll(int(first_angle), int(-speed / 4), 0.5)
+    # robot.set_heading(int(first_angle))
+    # robot.roll(int(first_angle), int(speed), (first_distance/ speed))
 
     for distance, angle in commands:
-        robot.roll(int(angle), speed, (distance / speed))
+        duration = (distance / speed)
+        # robot.scroll_matrix_text(str(angle), Color(r=0, g=100, b=0), 5, False)
+        robot.roll(int(angle), speed, 0.2)
         # time.sleep(distance / speed)  # Warte proportional zur Strecke
 
     # abbremsen
     # TODO in Uni auf Teppich ohne Hindernisse probieren
-    robot.roll(int(last_angle), int(-speed / 4), 0.5)
-    robot.set_heading(int(last_angle))
+    #  robot.roll(int(last_angle), int(-speed / 4), 0.5)
+    # robot.set_heading(int(last_angle))
 
 
-def plotSpline(points):
+def plotSpline(points, initial_heading):
     """
     Plottet den berechneten Hermite-Spline mit Kontrollpunkten und Tangenten.
 
@@ -172,9 +204,10 @@ def plotSpline(points):
         points (list): Liste von Kontrollpunkten [(x0, y0), (x1, y1), ...].
         tangents (list): Liste von Tangenten [(dx0, dy0), (dx1, dy1), ...].
         spline_points (list): Liste von Punkten auf dem Spline [(x, y), ...].
+        initial_heading:
     """
 
-    tangents = calculate_tangents(points)
+    tangents = calculate_tangents(points, initial_heading=initial_heading)
     spline_points = calculate_hermite_spline(points, tangents, 10)
 
     # Kontrollpunkte und Tangenten plotten

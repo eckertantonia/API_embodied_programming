@@ -1,5 +1,5 @@
 {
-    "robots": ["SB-34D5", "SB-E118", "SB-DAC2"],
-    "choreography": "move",
-    "strategy": "forward"
+    "robots": ["SB-E118", "SB-DAC2", "SB-F545", "SB-6476", "SB-34D5"],
+    "choreography": "flock",
+    "strategy": ""
 }
