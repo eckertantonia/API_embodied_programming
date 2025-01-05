@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from typing import List
 
 from spherov2 import scanner
@@ -24,8 +25,9 @@ class Manager:
         """
         return next((bolt for bolt in self.bolts if bolt.name == name), None)
 
-    async def manage_bolts(self, bolts, choreography, strategy):
+    def manage_bolts(self, bolts: List[str], choreography, strategy):
         """
+        TODO: Fehlermanagement bei Verbindung
         Creates task in running loop, calls correlating async function.
 
         :param bolts:
@@ -34,62 +36,31 @@ class Manager:
         :return:
         """
 
-        tasks = [self._set_robot(bolt) for bolt in bolts]
-        await asyncio.gather(*tasks)
-        self.connection_event.set()
+        # tasks = [self._set_robot(bolt) for bolt in bolts]
+        # await asyncio.gather(*tasks)
+        # self.connection_event.set()
 
-        await self._start_choreo(self.bolts, choreography, strategy)
+        threads = []
+        for bolt in bolts:
+            thread = threading.Thread(target=self._set_robot, args=(bolt,))
+            threads.append(thread)
+            thread.start()
 
-    # brauch ich die methode noch?
-    async def _manage_bolts_async(self, bolts, choreography, strategy):
-        tasks = [self._set_robot(bolt) for bolt in bolts]
-        await asyncio.gather(*tasks)
-        self.connection_event.set()
+        # Wait for all threads to finish
+        for thread in threads:
+            thread.join()
 
-        await self._start_choreo(self.bolts, choreography, strategy)
+        self._start_choreo(self.bolts, choreography, strategy)
 
-    async def _set_robot(self, name):
 
-        # Bolt schon in bolts[], dann verbindungsprozess abbrechen
-        # TODO check ob das wirklich funktioniert
-        if self._check_robot_in_list(name):
-            print(f"{name} existiert schon!")
-            return
+    def _set_robot(self, name: str):
 
-        bolt = await self._create_bolt(name)
+        toy = scanner.find_toy(toy_name=name)
+        bolt = Bolt(toy)
         self.bolts.append(bolt)
 
-    async def _create_bolt(self, name) -> Bolt:
 
-        toy = await self.find_toy_with_retry(name)
-        if toy is None:
-            raise ValueError(f"Spielzeug '{name}' konnte nach zwei Versuchen nicht gefunden werden.")
-
-        print(f"Gefunden: {toy.name} ({toy.address})")
-        bolt = Bolt(toy)
-
-        return bolt
-
-    async def find_toy_with_retry(self, name):
-        """
-        Sucht nach Bolt mit bestimmter Bezeichnung. Wenn Bolt im ersten Versuch nicht gefunden wird, wird ein zweiter Versuch gestartet. Wenn auch im zweiten Versuch kein Bolt gefunden wird, dann wird eine Exception geworfen.
-        TODO: Exception pruefen, welche wird geworfen, welche muss gefangen werden, gibt man das im Methoden-Kopf an? Eigene Exception werfen?
-
-        :param name: string Bolt-Bezeichnung
-        :return:
-        """
-        for attempt in range(2):  # Maximal zwei Versuche
-            try:
-                toy = await asyncio.get_event_loop().run_in_executor(None, lambda: scanner.find_toy(toy_name=name))
-                if toy:
-                    return toy
-                print(f"Versuch {attempt + 1}: Kein Spielzeug gefunden. Wiederholen...")
-            except scanner.ToyNotFoundError as e:
-                print(f"Fehler bei Versuch {attempt + 1}: \"{e}\" für Spielzeug \"{name}\"")
-            await asyncio.sleep(1)  # Kurze Pause vor erneutem Versuch
-        return None
-
-    async def _start_choreo(self, robots, choreography, strategy):
+    def _start_choreo(self, robots, choreography, strategy):
         """
 
         :param robots: BoltGroup
@@ -97,6 +68,5 @@ class Manager:
         :param strategy: string
         :return:
         """
-        await self.connection_event.wait()
         choreo = Choreography()
-        await choreo.start_choreography(robots, choreography, strategy)
+        choreo.start_choreography(robots, choreography, strategy)

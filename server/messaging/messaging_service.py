@@ -9,4 +9,4 @@ async def decode_message(json_data):
     robots = data["robots"]
     strategy = data["strategy"]
 
-    await control(robots, choreography, strategy)
+    control(robots, choreography, strategy)
