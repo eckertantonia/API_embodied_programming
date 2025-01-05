@@ -2,12 +2,14 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
+from spherov2.sphero_edu import SpheroEduAPI
 from spherov2.types import Color
 
 from BoltGroup import BoltGroup
 from bolt import Bolt
 from movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 from server.choreographies.FlockChoreo import FlockChoreo
+# from server.choreographies.MixChoreo import MixChoreo
 
 STRATEGIES = {
     "forward": MoveForwardStrategy
@@ -51,6 +53,11 @@ class Choreography:
 
             await flock.start_choreo()
 
+        elif choreography == "mix":
+            mix = MixChoreo()
+
+            await mix.start_choreo()
+
 
     # TODO in choreography part auslagern?
     async def choreo_async(self, strategy):
@@ -68,7 +75,7 @@ class Choreography:
         with ThreadPoolExecutor() as executor:
             def sync_task():
                 try:
-                    with bolt.get_spheroeduapi() as bolt_api:
+                    with SpheroEduAPI(bolt.toy) as bolt_api:
                         bolt.calibrate(bolt_api)
                         bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
                         strategy_instance = _get_strategy_instance(strategy)

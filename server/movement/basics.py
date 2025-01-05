@@ -1,4 +1,5 @@
 import math
+import time
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -130,7 +131,7 @@ def calculate_commands(points, compass_offset):
         x1, y1 = points[i - 1]
         x2, y2 = points[i]
         dx, dy = x2 - x1, y2 - y1
-        distance = np.sqrt(dx ** 2 + dy ** 2) *10 # Skalierung der Distanz
+        distance = np.sqrt(dx ** 2 + dy ** 2)  # Distanz ohne Skalierung
         angle = (360 - math.degrees(math.atan2(dy, dx))) % 360
         # Transformiere Winkel ins globale Koordinatensystem
         global_angle = (angle + compass_offset) % 360
@@ -154,7 +155,9 @@ def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_o
         None
     """
     try:
-        anzahl_punkte = 5
+        pointA = np.array([points[0][0], points[0][1]])
+        pointB = np.array([points[-1][0], points[-1][1]])
+        anzahl_punkte = 2 + int(abs(np.linalg.norm(pointA - pointB)))
         tangents = calculate_tangents(points, initial_heading=initial_heading)
 
         spline = calculate_hermite_spline(points, tangents, anzahl_punkte)
@@ -174,6 +177,21 @@ def _basic_drive(robot, commands, speed=50):
     :return:
     """
 
+    TIME_PER_UNIT = 0.5  # Zeit (in Sekunden) pro Einheit Strecke.
+
+    # Gesamtdistanz berechnen
+    total_distance = sum(cmd[0] for cmd in commands)
+
+    # Falls die Distanz 0 ist, beende die Funktion
+    if total_distance == 0:
+        print("Gesamtdistanz ist 0. Keine Bewegung erforderlich.")
+        return
+
+    # Berechne die Gesamtdauer basierend auf der Zeit pro Einheit
+    total_duration = total_distance * TIME_PER_UNIT
+
+    print(f"{total_distance} in {total_duration} sec")
+
     first_distance, first_angle = commands[0]
     last_distance, last_angle = commands[-1]
 
@@ -185,10 +203,11 @@ def _basic_drive(robot, commands, speed=50):
     # robot.roll(int(first_angle), int(speed), (first_distance/ speed))
 
     for distance, angle in commands:
-        duration = (distance / speed)
-        # robot.scroll_matrix_text(str(angle), Color(r=0, g=100, b=0), 5, False)
-        robot.roll(int(angle), speed, 0.2)
-        # time.sleep(distance / speed)  # Warte proportional zur Strecke
+        # Berechne die relative Dauer basierend auf dem Verhältnis der Distanz
+        relative_duration = distance / total_distance
+        duration = total_duration * relative_duration  # Dauer für diesen Abschnitt
+        robot.roll(int(angle), speed, duration)
+        # time.sleep(duration)  # Warte proportional zur Strecke
 
     # abbremsen
     # TODO in Uni auf Teppich ohne Hindernisse probieren

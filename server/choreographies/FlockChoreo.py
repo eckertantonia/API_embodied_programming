@@ -3,6 +3,8 @@ import math
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+from spherov2.sphero_edu import SpheroEduAPI
+
 from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 
 from spherov2.types import Color
@@ -27,7 +29,7 @@ class FlockChoreo():
         :return:
         """
 
-        self.assign_pos()
+        self.assign_pos() # später unwichtig, weil position schon in bolt gespeichert
 
         flock_tasks = [
                           self.task(self.start_leader, self.leader)
@@ -40,7 +42,7 @@ class FlockChoreo():
     def assign_pos(self):
 
         # TODO: vorerst Helfer, muss an endgültige Choreo angepasst werden.
-        positions = [(0, 0), (0, 1), (1, 0), (0, -1), (-1, 0)]
+        positions = [(0, 0), (0, 2), (2, 0), (0, -2), (-2, 0)]
         # positions = [(0, 0),(0, -1)]
 
         for bolt in self.bolts:
@@ -67,9 +69,9 @@ class FlockChoreo():
     def sync_task(self, strategy, bolt):
         # synchrone Methode, weil SpheroEduApi synchron ist
         try:
-            with bolt.get_spheroeduapi() as bolt_api:
+            with SpheroEduAPI(bolt.toy) as bolt_api:
                 # Bolt kalibrieren, Offset setzen
-                bolt.calibrate(bolt_api)
+                bolt.calibrate()
 
                 strategy = strategy(bolt_api, bolt)
 
@@ -79,23 +81,22 @@ class FlockChoreo():
         except asyncio.TimeoutError as timeout:
             print(f"TimeoutError in sync_task for Bolt {bolt.name}: {timeout}")
         except Exception as e:
-            print(f"Error in sync_taks: {e}")
-            raise
+            print(f"{bolt.name} Error in sync_taks: {e}")
 
-    async def start_leader(self, robot, bolt):
+    async def start_leader(self, robot_api, bolt):
         try:
-            robot.set_matrix_character("L", color=Color(r=100, g=0, b=100))
+            robot_api.set_matrix_character("L", color=Color(r=100, g=0, b=100))
 
             self.leader_location = bolt.position
-            self.leader_heading = robot.get_heading()
+            self.leader_heading = robot_api.get_heading()
             print(f"leader location: {self.leader_location}")
             await asyncio.sleep(30)
         except Exception as e:
             print(f"Exception in start_leader with Bolt {bolt.name}: {e}")
 
-    async def start_following(self, robot, bolt):
+    async def start_following(self, robot_api, bolt):
         try:
-            robot.set_matrix_character("F", color=Color(r=100, g=0, b=0))
+            robot_api.set_matrix_character("F", color=Color(r=100, g=0, b=0))
 
             print(f"Bolt {bolt.name} an Pos {bolt.position}")
 
@@ -104,11 +105,11 @@ class FlockChoreo():
             if self.leader_location is not None:
                 # Route setzen
                 route_points = [bolt.position, self.leader_location]
-                robot.set_matrix_character("F", color=Color(r=0, g=100, b=0))
+                robot_api.set_matrix_character("F", color=Color(r=0, g=100, b=0))
                 await asyncio.sleep(3)
                 print(f"{bolt.name} position {bolt.position}")
                 # Route fahren
-                move.drive(robot, route_points, offset=bolt.offset )
+                move.drive(bolt, robot_api, route_points, offset=bolt.offset)
                 print(f"{bolt.name} roll...")
                 # Position updaten
                 bolt.update_position(route_points[-1])
@@ -118,28 +119,3 @@ class FlockChoreo():
                 print("No leader")
         except Exception as e:
             print(f"Exception in start_following with Bolt {bolt.name}: {e}")
-
-    async def navigate_to_leaderpos(self, cur_pos):
-        speed_cm_per_sec = 40
-
-        x1, y1 = cur_pos[0], cur_pos[1]
-        x2, y2 = self.leader_location[0], self.leader_location[1]
-
-        # Berechnung Distanz
-        distance_units = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
-        distance_cm = distance_units * self.scale
-
-        # Berechnung Winkel (heading)
-        # TODO: die Winkel sich wack
-        angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
-        if angle < 0:
-            angle += 360  # damit Winkel zwischen 0 und 360
-
-        # Zeit
-        duration = distance_cm / speed_cm_per_sec
-
-        speed = int(speed_cm_per_sec / speed_cm_per_sec * 255)
-        speed = max(min(speed, 255), 0)
-
-        return int(angle), speed, duration

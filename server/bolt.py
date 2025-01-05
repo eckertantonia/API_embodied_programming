@@ -5,7 +5,7 @@ class Bolt:
     def __init__(self, toy):
         self.name = toy.name
         self.toy = toy
-        self.toyApi = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
+        # self.toyApi = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
         self.position = (0, 0)  # Standard-Startposition
         self.offset = 0 # Default 0, TODO berechnen
 
@@ -17,15 +17,15 @@ class Bolt:
         """
         self.position = new_pos
 
-    def get_spheroeduapi(self) -> SpheroEduAPI:
-        """
-        :return: SpheroEduApi-Instanz für den Bolt
-        """
-        try:
-            return self.toyApi
-        except Exception as e:
-            print(f"Exception in Bolt.get_spheroeduapi: {e}")
-            raise
+    # def get_spheroeduapi(self) -> SpheroEduAPI:
+    #     """
+    #     :return: SpheroEduApi-Instanz für den Bolt
+    #     """
+    #     try:
+    #         return self.toyApi
+    #     except Exception as e:
+    #         print(f"Exception in Bolt.get_spheroeduapi: {e}")
+    #         raise
 
     def calibrate(self):
         """
