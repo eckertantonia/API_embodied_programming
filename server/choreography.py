@@ -2,6 +2,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
+from bleak.exc import BleakDeviceNotFoundError
 from spherov2.sphero_edu import SpheroEduAPI
 from spherov2.types import Color
 
@@ -9,10 +10,12 @@ from BoltGroup import BoltGroup
 from bolt import Bolt
 from movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 from server.choreographies.FlockChoreo import FlockChoreo
-# from server.choreographies.MixChoreo import MixChoreo
+from server.choreographies.MixChoreo import MixChoreo
+from server.movement.movement_strategies.CirclingStrategy import CirclingStrategy
 
 STRATEGIES = {
-    "forward": MoveForwardStrategy
+    "forward": MoveForwardStrategy,
+    "circle": CirclingStrategy
 }
 
 # TODO: Strategien in Manager verwalten?
@@ -40,15 +43,11 @@ class Choreography:
         :return:
         """
 
-        # Bolts als Gruppe definieren
-        for bolt in bolt_group:
-            self.boltGroup.assign_bolt(bolt)
+        self.create_bolt_group(bolt_group)
+        await self.open_apis()
 
-        if choreography == "move":
-
-            self.loop.create_task(self.choreo_async(strategy))
-
-        elif choreography == "flock":
+        # choreo logik
+        if choreography == "flock":
             flock = FlockChoreo(self.boltGroup)
 
             await flock.start_choreo()
@@ -56,33 +55,27 @@ class Choreography:
         elif choreography == "mix":
             mix = MixChoreo()
 
-            await mix.start_choreo()
+            await mix.start_choreo(self.boltGroup, _get_strategy_instance(strategy))
+
+        await self.close_apis()
+
+    def create_bolt_group(self, bolt_group):
+
+        for bolt in bolt_group:
+            bolt_api = SpheroEduAPI(bolt.toy)
+            self.boltGroup.assign_bolt(bolt, bolt_api)
+
+    async def open_apis(self):
+        for api in self.boltGroup.bolts.values():
+            try:
+                api.__enter__()
+                api.scroll_matrix_text("Hi", color=Color(r=100, g=0, b=100), fps=5, wait=False)
+            except BleakDeviceNotFoundError as e:
+                print(f"Error in open_apis for: {e}")
+            except TimeoutError as e:
+                print(f"Error in open_apis for: {e}")
 
 
-    # TODO in choreography part auslagern?
-    async def choreo_async(self, strategy):
-        """
-
-        :param strategy: MovementStrategy
-        :return:
-        """
-        tasks = [self.task(strategy, bolt) for bolt in self.boltGroup]
-        await asyncio.gather(*tasks)
-
-    async def task(self, strategy, bolt):
-        print("task")
-        points = [(0, 1), (0, 0)]  # [] von Punkten
-        with ThreadPoolExecutor() as executor:
-            def sync_task():
-                try:
-                    with SpheroEduAPI(bolt.toy) as bolt_api:
-                        bolt.calibrate(bolt_api)
-                        bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
-                        strategy_instance = _get_strategy_instance(strategy)
-                        strategy_instance.drive(bolt_api, points, offset=bolt.offset)
-
-                except Exception as e:
-                    print(f"Error in sync_taks: {e}")
-                    raise
-
-            await self.loop.run_in_executor(executor, sync_task)
+    async def close_apis(self):
+        for api in self.boltGroup.bolts.values():
+            api.__exit__(None, None, None)

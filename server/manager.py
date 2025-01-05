@@ -80,15 +80,12 @@ class Manager:
         """
         for attempt in range(2):  # Maximal zwei Versuche
             try:
-                toy = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: scanner.find_toy(toy_name=name)
-                )
+                toy = await asyncio.get_event_loop().run_in_executor(None, lambda: scanner.find_toy(toy_name=name))
                 if toy:
                     return toy
                 print(f"Versuch {attempt + 1}: Kein Spielzeug gefunden. Wiederholen...")
             except scanner.ToyNotFoundError as e:
                 print(f"Fehler bei Versuch {attempt + 1}: \"{e}\" für Spielzeug \"{name}\"")
-                raise
             await asyncio.sleep(1)  # Kurze Pause vor erneutem Versuch
         return None
 
