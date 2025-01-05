@@ -44,7 +44,9 @@ class Choreography:
         """
 
         self.create_bolt_group(bolt_group)
-        await self.open_apis()
+        # await self.open_apis()
+        tasks = [self.open_apis()]
+        await asyncio.gather(*tasks)
 
         # choreo logik
         if choreography == "flock":
@@ -62,14 +64,14 @@ class Choreography:
     def create_bolt_group(self, bolt_group):
 
         for bolt in bolt_group:
-            bolt_api = SpheroEduAPI(bolt.toy)
-            self.boltGroup.assign_bolt(bolt, bolt_api)
+            self.boltGroup.assign_bolt(bolt)
 
     async def open_apis(self):
-        for api in self.boltGroup.bolts.values():
+        for bolt in self.boltGroup:
             try:
-                api.__enter__()
-                api.scroll_matrix_text("Hi", color=Color(r=100, g=0, b=100), fps=5, wait=False)
+                bolt.toyApi.__enter__()
+                bolt.toyApi.scroll_matrix_text("Hi", color=Color(r=100, g=0, b=100), fps=5, wait=True)
+                await asyncio.sleep(5)
             except BleakDeviceNotFoundError as e:
                 print(f"Error in open_apis for: {e}")
             except TimeoutError as e:
@@ -77,5 +79,5 @@ class Choreography:
 
 
     async def close_apis(self):
-        for api in self.boltGroup.bolts.values():
-            api.__exit__(None, None, None)
+        for bolt in self.boltGroup.bolts:
+            bolt.toyApi.__exit__(None, None, None)
