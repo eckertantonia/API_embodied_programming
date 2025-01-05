@@ -11,7 +11,7 @@ from spherov2.types import Color
 
 # TODO: Choreo oder Strategie?
 
-class FlockChoreo():
+class FlockChoreo:
     def __init__(self, robots):
         self.bolts = robots
         self.leader = None
@@ -69,34 +69,33 @@ class FlockChoreo():
     def sync_task(self, strategy, bolt):
         # synchrone Methode, weil SpheroEduApi synchron ist
         try:
-            with SpheroEduAPI(bolt.toy) as bolt_api:
-                # Bolt kalibrieren, Offset setzen
-                bolt.calibrate()
+            # Bolt kalibrieren, Offset setzen
+            bolt.calibrate()
 
-                strategy = strategy(bolt_api, bolt)
+            strategy = strategy(bolt)
 
-                #TODO: ist das Thread oder Coroutine?
-                asyncio.run_coroutine_threadsafe(strategy, self.loop).result()
+            #TODO: ist das Thread oder Coroutine?
+            asyncio.run_coroutine_threadsafe(strategy, self.loop).result()
 
         except asyncio.TimeoutError as timeout:
             print(f"TimeoutError in sync_task for Bolt {bolt.name}: {timeout}")
         except Exception as e:
             print(f"{bolt.name} Error in sync_taks: {e}")
 
-    async def start_leader(self, robot_api, bolt):
+    async def start_leader(self, bolt):
         try:
-            robot_api.set_matrix_character("L", color=Color(r=100, g=0, b=100))
+            bolt.toyApi.set_matrix_character("L", color=Color(r=100, g=0, b=100))
 
             self.leader_location = bolt.position
-            self.leader_heading = robot_api.get_heading()
+            self.leader_heading = bolt.toyApi.get_heading()
             print(f"leader location: {self.leader_location}")
             await asyncio.sleep(30)
         except Exception as e:
             print(f"Exception in start_leader with Bolt {bolt.name}: {e}")
 
-    async def start_following(self, robot_api, bolt):
+    async def start_following(self, bolt):
         try:
-            robot_api.set_matrix_character("F", color=Color(r=100, g=0, b=0))
+            bolt.toyApi.set_matrix_character("F", color=Color(r=100, g=0, b=0))
 
             print(f"Bolt {bolt.name} an Pos {bolt.position}")
 
@@ -105,11 +104,11 @@ class FlockChoreo():
             if self.leader_location is not None:
                 # Route setzen
                 route_points = [bolt.position, self.leader_location]
-                robot_api.set_matrix_character("F", color=Color(r=0, g=100, b=0))
+                bolt.toyApi.set_matrix_character("F", color=Color(r=0, g=100, b=0))
                 await asyncio.sleep(3)
                 print(f"{bolt.name} position {bolt.position}")
                 # Route fahren
-                move.drive(bolt, robot_api, route_points, offset=bolt.offset)
+                move.drive(bolt.toyApi, route_points, offset=bolt.offset)
                 print(f"{bolt.name} roll...")
                 # Position updaten
                 bolt.update_position(route_points[-1])
