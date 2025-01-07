@@ -9,7 +9,8 @@ from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardS
 
 from spherov2.types import Color
 
-# TODO: Choreo oder Strategie?
+# TODO: Logik in Strategy schieben
+# Choreo nur dafür da um Strategies aneinander zu hängen
 
 class FlockChoreo:
     def __init__(self, robots):
