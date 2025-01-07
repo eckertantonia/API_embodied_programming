@@ -1,8 +1,8 @@
 from server.bolt import Bolt
-from server.movement.movement_strategies.MovementInterface import MovementInterface
+from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 
-class InvitationStrategy(MovementInterface):
+class InvitationStrategy(MovementStrategy):
 
     def drive(self, robots, points, initial_heading=None, offset=0):
 

@@ -11,7 +11,6 @@ from choreography import Choreography
 class Manager:
     def __init__(self):
         self.bolts: List[Bolt] = []
-        self.loop = asyncio.get_running_loop()
 
         # event um auf api verbindung zu warten
         self.connection_event = asyncio.Event()

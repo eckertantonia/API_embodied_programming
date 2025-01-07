@@ -8,7 +8,7 @@ from setuptools.unicode_utils import try_encode
 from spherov2.sphero_edu import SpheroEduAPI
 from spherov2.types import Color
 
-from BoltGroup import BoltGroup
+from bolt_group import BoltGroup
 from bolt import Bolt
 from movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 from server.choreographies.FlockChoreo import FlockChoreo
@@ -31,25 +31,23 @@ def _get_strategy_instance(strategy):
 
 class Choreography:
     def __init__(self):
-        self.movementStrategies = None
-        self.boltGroup = BoltGroup()
-        self.loop = asyncio.get_running_loop()
+        self.bolt_group = BoltGroup()
 
-    def start_choreography(self, bolt_group: List[Bolt], choreography, strategy):
+    def start_choreography(self, robot_group: List[Bolt], choreography, strategy):
         """
         Initialer Start jeder Choreographie.
 
-        :param bolt_group: List[Bolt], BoltGroup
+        :param robot_group: List[Bolt], BoltGroup
         :param choreography: str
         :param strategy: str
         :return:
         """
 
-        self.create_bolt_group(bolt_group)
+        self.create_bolt_group(robot_group)
 
         try:
             threads = []
-            for bolt in bolt_group:
+            for bolt in robot_group:
                 thread = threading.Thread(target=self.open_api, args=(bolt,))
                 threads.append(thread)
                 thread.start()
@@ -61,23 +59,23 @@ class Choreography:
 
         # choreo logik
             if choreography == "flock":
-                flock = FlockChoreo(self.boltGroup)
+                flock = FlockChoreo(self.bolt_group)
 
                 flock.start_choreo()
 
             elif choreography == "mix":
                 mix = MixChoreo()
 
-                mix.start_choreo(self.boltGroup, _get_strategy_instance(strategy))
+                mix.start_choreo(self.bolt_group, _get_strategy_instance(strategy))
         finally:
-            for bolt in bolt_group:
+            for bolt in robot_group:
                 self.close_api(bolt)
 
 
     def create_bolt_group(self, bolt_group):
 
         for bolt in bolt_group:
-            self.boltGroup.assign_bolt(bolt)
+            self.bolt_group.assign_bolt(bolt)
 
     def open_api(self, bolt: Bolt):
         """
@@ -90,9 +88,9 @@ class Choreography:
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                bolt.toyApi.__enter__()
+                bolt.toy_api.__enter__()
                 # bolt.calibrate()
-                bolt.toyApi.scroll_matrix_text("Hi", color=Color(r=100, g=0, b=100), fps=5, wait=True)
+                bolt.toy_api.scroll_matrix_text("Hi", color=Color(r=100, g=0, b=100), fps=5, wait=True)
                 # Wenn erfolgreich, Schleife verlassen
                 print(f"{bolt.name} erfolgreich verbunden!")
                 break
@@ -120,4 +118,4 @@ class Choreography:
 
         :param bolt: Bolt Instanz, die Verbindung zum Roboter hält
         """
-        bolt.toyApi.__exit__(None, None, None)
+        bolt.toy_api.__exit__(None, None, None)

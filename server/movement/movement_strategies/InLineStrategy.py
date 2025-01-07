@@ -2,10 +2,10 @@ from abc import ABC
 
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
-from server.movement.movement_strategies.MovementInterface import MovementInterface
+from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 
-class InLineStrategy(MovementInterface, ABC):
+class InLineStrategy(MovementStrategy, ABC):
 
     def drive(self, robots: Bolt, points, initial_heading=None, offset=0):
         # TODO: wie mache ich klar, ob Linie auf x oder y Achse?

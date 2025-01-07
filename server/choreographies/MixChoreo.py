@@ -3,10 +3,10 @@ import time
 
 from spherov2.types import Color
 
-from server.BoltGroup import BoltGroup
+from server.bolt_group import BoltGroup
 from server.movement.movement_strategies.InLineStrategy import InLineStrategy
 from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
-from server.movement.movement_strategies.MovementInterface import MovementInterface
+from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 
 class MixChoreo:
@@ -14,7 +14,7 @@ class MixChoreo:
         self.move_forward_strategy = MoveForwardStrategy()
         self.in_line_strategy = InLineStrategy()
 
-    def start_choreo(self, bolt_group, strategy: MovementInterface):
+    def start_choreo(self, bolt_group, strategy: MovementStrategy):
 
         # assignStartPositions
         self.assign_start_pos(bolt_group)
@@ -53,7 +53,7 @@ class MixChoreo:
         for i in range(len(bolt_group.bolts)):
             bolt_group[i].calibrate()
             bolt_group[i].position = (0, i)
-            bolt_group[i].toyApi.set_matrix_character(f"{i}", color=Color(r=100, g=0, b=100))
+            bolt_group[i].toy_api.set_matrix_character(f"{i}", color=Color(r=100, g=0, b=100))
 
     def move_forward(self, bolt):
 

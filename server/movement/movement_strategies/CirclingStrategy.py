@@ -4,11 +4,11 @@ from abc import ABC
 from spherov2.types import Color
 
 import server.movement.basics as basic_moves
-from server.BoltGroup import BoltGroup
-from server.movement.movement_strategies.MovementInterface import MovementInterface
+from server.bolt_group import BoltGroup
+from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 
-class CirclingStrategy(MovementInterface, ABC):
+class CirclingStrategy(MovementStrategy, ABC):
 
     # 2 Bolts
 
@@ -60,21 +60,21 @@ class CirclingStrategy(MovementInterface, ABC):
     # TODO: Koordinatenberechnung!!!
     def move_up(self, robot):
         try:
-            robot.toyApi.set_matrix_character("0", color=Color(r=100, g=0, b=100))
+            robot.toy_api.set_matrix_character("0", color=Color(r=100, g=0, b=100))
             x, y = robot.position
             points = [(x, y), (x + 1, y + 1), (x + 2, y), (x + 1, y - 1), (x, y)]
 
-            basic_moves.drive_hermite_curve(robot.toyApi, points, compass_offset=robot.offset)
+            basic_moves.drive_hermite_curve(robot.toy_api, points, compass_offset=robot.offset)
             robot.update_position(points[-1])
         except RuntimeError as e:
             print(f"{e}")
 
     def move_down(self, robot):
         try:
-            robot.toyApi.set_matrix_character("1", color=Color(r=100, g=0, b=100))
+            robot.toy_api.set_matrix_character("1", color=Color(r=100, g=0, b=100))
             x, y = robot.position
             points = [(x, y), (x - 1, y - 1), (x - 2, y), (x - 1, y + 1), (x, y)]
-            basic_moves.drive_hermite_curve(robot.toyApi, points, compass_offset=robot.offset)
+            basic_moves.drive_hermite_curve(robot.toy_api, points, compass_offset=robot.offset)
             robot.update_position(points[-1])
         except RuntimeError as e:
             print(f"{e}")
