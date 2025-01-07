@@ -1,3 +1,5 @@
+import random
+
 from spherov2.sphero_edu import SpheroEduAPI
 
 
@@ -8,6 +10,7 @@ class Bolt:
         self.toyApi = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
         self.position = (0, 0)  # Standard-Startposition
         self.offset = 0 # Default 0, TODO berechnen
+        self.value = random.randint(0, 5)
 
     def update_position(self, new_pos):
         """
