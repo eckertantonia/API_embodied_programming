@@ -8,5 +8,11 @@ async def decode_message(json_data):
     choreography = data["choreography"]
     robots = data["robots"]
     strategy = data["strategy"]
+    message = data["message"]
+
+    if message:
+        if message == "redo":
+            pass
+
 
     await control(robots, choreography, strategy)

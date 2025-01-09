@@ -2,18 +2,33 @@
 
 import asyncio
 from websockets.asyncio.client import connect
-from messaging.messaging_client import codeMessage
+from messaging.messaging_client import hardcodedMessage, create_json_message
 
 
-async def connectToServer():
-
-    message_data = codeMessage()
+async def connect_to_server():
 
     async with connect("ws://localhost:8765") as websocket:
+        print(f"Mit Server verbunden!")
 
-        await websocket.send(message_data)
-        response = await websocket.recv()
-        print(response)
+        initial_message = create_json_message()
+
+        await websocket.send(initial_message)
+
+        while True:
+
+            json_message = input("Nachricht an Server: ")
+
+            if json_message is None:
+                continue
+
+            await websocket.send(json_message)
+
+            if json_message.lower() == "exit":
+                print("Verbindung wird geschlossen.")
+                break
+
+            response = await websocket.recv()
+            print(response)
 
 if __name__ == "__main__":
-    asyncio.run(connectToServer())
+    asyncio.run(connect_to_server())
