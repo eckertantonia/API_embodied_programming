@@ -10,8 +10,11 @@ class LEDControl:
         self.main_color = Color(r=2, g=238, b=255)
         self.highlight_color = Color(r=255, g=0, b=0)
 
-    def show_string(self, robot, string, color):
-        pass
+    def show_string(self, robot, string, color=None):
+        if color is None:
+            robot.toy_api.scroll_matrix_text("Hi", self.main_color, fps=5, wait=True)
+        else:
+            robot.toy_api.scroll_matrix_text("Hi", color, fps=5, wait=True)
 
     def show_character(self, robot, character, color = None):
         robot.toy_api.set_matrix_character(character, self.main_color)

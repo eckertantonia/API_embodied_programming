@@ -9,7 +9,7 @@ async def control_initial_connect(robots, choreography, strategy):
     manager = Manager()
     managers.append(manager)
 
-    await manager.connect_bolts(robots, choreography, strategy)
+    manager.connect_bolts(robots, choreography, strategy)
 
 def control_connected():
     manager = managers[0]

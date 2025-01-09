@@ -1,12 +1,16 @@
 import asyncio
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from bleak.exc import BleakDeviceNotFoundError
 from spherov2 import scanner
+from spherov2.scanner import ToyNotFoundError
+from spherov2.types import Color
 
 from bolt import Bolt
 from choreography import Choreography
+from server.led_control import LEDControl
 
 
 class Manager:
@@ -14,9 +18,11 @@ class Manager:
         self.bolts: List[Bolt] = []
         self.choreography = None
         self.strategy = None
+        self.led_control = LEDControl()
 
         # event um auf api verbindung zu warten
         self.connection_event = asyncio.Event()
+        self.executor = ThreadPoolExecutor()
 
     def _check_robot_in_list(self, name) -> Bolt:
         """
@@ -42,27 +48,28 @@ class Manager:
         self.choreography = choreography
         self.strategy = strategy
 
-        threads = []
         for bolt in bolts:
-            thread = threading.Thread(target=self._set_robot, args=(bolt,))
-            threads.append(thread)
-            thread.start()
-
-        # Wait for all threads to finish
-        for thread in threads:
-            thread.join()
+            self._set_robot(bolt)
 
 
     def _set_robot(self, name: str):
 
         try:
-            toy = scanner.find_toy(toy_name=name)
+            future = self.executor.submit(self._find_toy_blocking, name)
+
+            toy = future.result()
+
             bolt = Bolt(toy)
             self._open_api(bolt)
             self.bolts.append(bolt)
+        except ToyNotFoundError as e:
+            print(f"ToyNotFoundError for {name}")
         except Exception as e:
             print(f"manager: toy {name} not found")
             raise
+
+    def _find_toy_blocking(self, name: str):
+        return scanner.find_toy(toy_name=name)
 
     def _open_api(self, bolt: Bolt):
         """
@@ -77,8 +84,8 @@ class Manager:
             try:
                 retries += 1
                 bolt.toy_api.__enter__()
-                # bolt.calibrate()
-                bolt.toy_api.scroll_matrix_text("Hi", color=Color(r=100, g=0, b=100), fps=5, wait=True)
+                self.led_control.show_string(bolt, "Hi")
+                self.led_control.show_grouping(bolt)
                 # Wenn erfolgreich, Schleife verlassen
                 print(f"{bolt.name} erfolgreich verbunden!")
                 break

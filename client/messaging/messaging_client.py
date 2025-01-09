@@ -23,18 +23,20 @@ def create_initial_json_message():
 
 
 def continuing_message():
-        message = input("Nachricht an Server (\"start\" oder \"exit\"): ").strip()
+        message = input("Nachricht an Server (\"los\" oder \"stopp\" oder \"retry\"): ").strip()
 
         if not message:
                 print("Eingabe war leer")
                 return None
+        elif message == "retry":
+                return hardcoded_message()
+        else:
+                data = {
+                        "robots": "",
+                        "choreography": "",
+                        "strategy": "",
+                        "message": message
+                }
 
-        data = {
-                "robots": "",
-                "choreography": "",
-                "strategy": "",
-                "message": message
-        }
-
-        return json.dumps(data)
+                return json.dumps(data)
 

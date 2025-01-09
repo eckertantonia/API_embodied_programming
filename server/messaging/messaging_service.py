@@ -10,10 +10,10 @@ async def decode_message(json_data):
     strategy = data["strategy"]
     message = data["message"]
 
-    if message == "start":
+    if message == "los":
         control_connected()
 
-    elif message == "exit":
+    elif message == "stopp":
         control_disconnect()
 
     else:

@@ -31,9 +31,9 @@ class MixChoreo:
         self.move_forward(self.circle_group[1])
         self.move_forward(self.circle_group[2])
 
-        strategy.drive(self.circle_group, [])
-
-        self.execute_threads(self.circle_group, self.move_back)
+        # strategy.drive(self.circle_group, [])
+        #
+        # self.execute_threads(self.circle_group, self.move_back)
 
         # self.execute_threads(bolt_group, self.move_in_line)
 
@@ -60,22 +60,22 @@ class MixChoreo:
         positions = [(0,0), (1,0), (2,0), (3,0), (4,0)]
         for bolt in bolt_group:
             bolt.calibrate()
-            if bolt.name == "SB-8EA0":
+            if bolt.name == "SB-0A22":
                 bolt.update_position(positions[0])
                 self.led_control.show_character(bolt, "0")
-            elif bolt.name == "SB-3DAB":
+            elif bolt.name == "SB-3AE1":
                 bolt.update_position(positions[1])
                 self.led_control.show_character(bolt, "1")
                 self.circle_group.assign_bolt(bolt)
-            elif bolt.name == "SB-025F":
+            elif bolt.name == "SB-B09C":
                 bolt.update_position(positions[2])
                 self.led_control.show_character(bolt, "2")
                 self.circle_group.assign_bolt(bolt)
-            elif bolt.name == "SB-231B":
+            elif bolt.name == "SB-22E4":
                 bolt.update_position(positions[3])
                 self.led_control.show_character(bolt, "3")
                 self.circle_group.assign_bolt(bolt)
-            elif bolt.name == "SB-51FA":
+            elif bolt.name == "SB-B98E":
                 bolt.update_position(positions[4])
                 self.led_control.show_character(bolt, "4")
 

@@ -1,5 +1,6 @@
 {
-    "robots": ["SB-8EA0", "SB-3DAB", "SB-025F", "SB-231B", "SB-51FA"],
+    "robots": ["SB-0A22", "SB-3AE1", "SB-B09C", "SB-22E4", "SB-B98E"],
     "choreography": "mix",
-    "strategy": "circle"
+    "strategy": "circle",
+    "message": ""
 }

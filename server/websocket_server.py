@@ -11,13 +11,15 @@ from messaging.messaging_service import decode_message
 async def handler(websocket):
     while True:
         try:
+            print("Nächste Anweisung bitte!")
             data = await websocket.recv()
+            reply = f"Daten erhalten als: {data}"
+            print(reply)
+
+            await websocket.send(reply)
 
             # ab hier kommt dann komplette Logik
             await decode_message(data)
-
-            reply = f"Daten erhalten als: {data}"
-            await websocket.send(reply)
         except ConnectionClosedOK:
             print("Connection closed OK")
             break

@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 import asyncio
+
 from websockets.asyncio.client import connect
 
-from client.messaging.messaging_client import continuing_message
-from messaging.messaging_client import hardcoded_message, create_initial_json_message
+from messaging.messaging_client import create_initial_json_message, continuing_message
 
 
 async def connect_to_server():
-
     async with connect("ws://localhost:8765") as websocket:
         print(f"Mit Server verbunden!")
 
@@ -17,6 +16,9 @@ async def connect_to_server():
         print(f"Sendet Anfangsnachricht: {initial_message}")
 
         await websocket.send(initial_message)
+
+        response = await websocket.recv()
+        print(response)
 
         while True:
 
@@ -33,6 +35,7 @@ async def connect_to_server():
 
             response = await websocket.recv()
             print(response)
+
 
 if __name__ == "__main__":
     asyncio.run(connect_to_server())
