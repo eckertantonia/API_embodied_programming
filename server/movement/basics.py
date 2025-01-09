@@ -1,4 +1,6 @@
+from datetime import datetime
 import math
+import threading
 import time
 
 import numpy as np
@@ -6,6 +8,7 @@ import matplotlib.pyplot as plt
 
 from spherov2.types import Color
 
+stop_threads = False
 
 def calculate_hermite_curve(p0, p1, m0, m1, anzahl_punkte):
     """
@@ -169,8 +172,9 @@ def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_o
         raise
 
 
-def _basic_drive(robot, commands, speed=50):
+def _basic_drive(robot, commands, speed=70):
     """
+    TODO: speed 50 ist ein bisschen sehr gemaechlich
     holt Schwung und bremst ab
     :param robot:
     :param commands:
@@ -202,17 +206,58 @@ def _basic_drive(robot, commands, speed=50):
     # robot.set_heading(int(first_angle))
     # robot.roll(int(first_angle), int(speed), (first_distance/ speed))
 
+    robot.roll(int(first_angle), 0, 1)
+    start_distance = robot.get_distance()
+
+    # thread = threading.Thread(target=get_location, args=(robot, start_distance,))
+    # global stop_thread
+    # stop_thread = False
+    # thread.start()
+
     for distance, angle in commands:
         # Berechne die relative Dauer basierend auf dem Verhältnis der Distanz
         relative_duration = distance / total_distance
         duration = total_duration * relative_duration  # Dauer für diesen Abschnitt
-        robot.roll(int(angle), speed, duration)
+        print(f"duration: {duration}")
+        # TODO roll selbst zusammenbauen aus set_heading, set_speed, stop_roll mit Distanzabfrage
+        # robot.roll(int(angle), speed, duration)
+        roll_distance(robot, int(angle), 20*distance, speed)
         # time.sleep(duration)  # Warte proportional zur Strecke
 
+    print(f"Gesamtdistanz {robot.get_distance()-start_distance}")
+    # time.sleep(2)
+    # stop_thread = True
+    # thread.join()
     # abbremsen
     # TODO in Uni auf Teppich ohne Hindernisse probieren
     #  robot.roll(int(last_angle), int(-speed / 4), 0.5)
     # robot.set_heading(int(last_angle))
+
+# def get_location(bolt, start_distance):
+#     while True:
+#         print(f"{bolt.get_distance()-start_distance} cm {datetime.time(datetime.now())}")
+#         time.sleep(0.1)
+#         if stop_thread:
+#             break
+
+def roll_distance(robot, heading, distance, speed):
+    robot.set_heading(heading)
+    thread = threading.Thread(target=control_distance, args=(robot, distance))
+    thread.start()
+    robot.set_speed(speed)
+    thread.join()
+
+def control_distance(robot, distance):
+    start_distance = robot.get_distance()
+    print(f"distance: {distance}")
+
+    while True:
+        cur_distance = robot.get_distance()-start_distance
+        print(f"cur_distance: {cur_distance}")
+        if cur_distance >= distance:
+            robot.stop_roll()
+            break
+        time.sleep(0.1)
 
 
 def plotSpline(points, initial_heading):

@@ -54,9 +54,13 @@ class Manager:
 
     def _set_robot(self, name: str):
 
-        toy = scanner.find_toy(toy_name=name)
-        bolt = Bolt(toy)
-        self.bolts.append(bolt)
+        try:
+            toy = scanner.find_toy(toy_name=name)
+            bolt = Bolt(toy)
+            self.bolts.append(bolt)
+        except Exception as e:
+            print(f"manager: toy {name} not found")
+            raise
 
 
     def _start_choreo(self, robots, choreography, strategy):
