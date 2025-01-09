@@ -26,7 +26,7 @@ async def handler(websocket):
             break
 
 
-async def startServer():
+async def start_server():
     async with serve(handler, "localhost", 8765):
         print("server laeuft!")
         await asyncio.get_running_loop().create_future()  # run forever
@@ -34,4 +34,4 @@ async def startServer():
 
 if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
-    asyncio.run(startServer(), debug=True)
+    asyncio.run(start_server(), debug=True)
