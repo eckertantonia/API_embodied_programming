@@ -1,5 +1,5 @@
 import json
-from server.controller import control
+from server.controller import control_initial_connect, control_connected, control_disconnect
 
 
 async def decode_message(json_data):
@@ -10,10 +10,11 @@ async def decode_message(json_data):
     strategy = data["strategy"]
     message = data["message"]
 
-    if message:
-        if message == "redo":
-            pass
+    if message == "start":
+        control_connected()
 
+    elif message == "exit":
+        control_disconnect()
 
-
-    control(robots, choreography, strategy)
+    else:
+        await control_initial_connect(robots, choreography, strategy)

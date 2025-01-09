@@ -5,14 +5,19 @@ import asyncio
 managers = []
 
 
-async def control(robots, movement, strategy):
+async def control_initial_connect(robots, choreography, strategy):
     manager = Manager()
     managers.append(manager)
 
-    await manager.manage_bolts(robots, movement, strategy)
+    await manager.connect_bolts(robots, choreography, strategy)
 
 def control_connected():
     manager = managers[0]
 
-    # manager funktionen zum connecten und disconnecten der bolts
-    # methode um choreo zu starten
+    manager.start_choreo()
+
+def control_disconnect():
+    manager = managers[0]
+
+    manager.close_api()
+    print("Apis closed.")
