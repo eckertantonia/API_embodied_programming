@@ -15,4 +15,5 @@ async def decode_message(json_data):
             pass
 
 
+
     control(robots, choreography, strategy)
