@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.8
 
 import asyncio
+import json
 import logging
 
 from websockets.asyncio.server import serve
@@ -16,10 +17,26 @@ async def handler(websocket):
             reply = f"Daten erhalten als: {data}"
             print(reply)
 
+            try:
+                message = json.loads(data)
+            except json.JSONDecodeError:
+                print("Ungültige JSON-Nachricht erhalten.")
+                await websocket.send("Ungültige Nachricht")
+                continue
+
+                # Keep-Alive-Nachrichten ignorieren
+            if message.get("type") == "keep_alive":
+                print("Keep-Alive-Nachricht erhalten. Ignorieren.")
+                continue
+
             await websocket.send(reply)
 
             # ab hier kommt dann komplette Logik
-            await decode_message(data)
+            try:
+                await decode_message(data)
+            except Exception:
+                print("exception in decode_message")
+                await websocket.send("error. retry")
         except ConnectionClosedOK:
             print("Connection closed OK")
             break

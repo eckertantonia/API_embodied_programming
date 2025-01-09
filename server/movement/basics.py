@@ -199,20 +199,8 @@ def _basic_drive(robot, commands, speed=70):
     first_distance, first_angle = commands[0]
     last_distance, last_angle = commands[-1]
 
-    # schwung holen
-    # robot.set_matrix_character("A", color=Color(r=100, g=0, b=100))
-    # robot.set_heading(int(first_angle))
-    # robot.roll(int(first_angle), int(-speed / 4), 0.5)
-    # robot.set_heading(int(first_angle))
-    # robot.roll(int(first_angle), int(speed), (first_distance/ speed))
-
     robot.roll(int(first_angle), 0, 1)
     start_distance = robot.get_distance()
-
-    # thread = threading.Thread(target=get_location, args=(robot, start_distance,))
-    # global stop_thread
-    # stop_thread = False
-    # thread.start()
 
     for distance, angle in commands:
         # Berechne die relative Dauer basierend auf dem Verhältnis der Distanz
@@ -221,24 +209,10 @@ def _basic_drive(robot, commands, speed=70):
         print(f"duration: {duration}")
         # TODO roll selbst zusammenbauen aus set_heading, set_speed, stop_roll mit Distanzabfrage
         # robot.roll(int(angle), speed, duration)
-        roll_distance(robot, int(angle), 20*distance, speed)
+        roll_distance(robot, int(angle), distance, speed)
         # time.sleep(duration)  # Warte proportional zur Strecke
 
     print(f"Gesamtdistanz {robot.get_distance()-start_distance}")
-    # time.sleep(2)
-    # stop_thread = True
-    # thread.join()
-    # abbremsen
-    # TODO in Uni auf Teppich ohne Hindernisse probieren
-    #  robot.roll(int(last_angle), int(-speed / 4), 0.5)
-    # robot.set_heading(int(last_angle))
-
-# def get_location(bolt, start_distance):
-#     while True:
-#         print(f"{bolt.get_distance()-start_distance} cm {datetime.time(datetime.now())}")
-#         time.sleep(0.1)
-#         if stop_thread:
-#             break
 
 def roll_distance(robot, heading, distance, speed):
     robot.set_heading(heading)

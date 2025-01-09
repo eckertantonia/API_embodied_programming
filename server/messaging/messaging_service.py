@@ -5,6 +5,10 @@ from server.controller import control_initial_connect, control_connected, contro
 async def decode_message(json_data):
     data = json.loads(json_data)
 
+    if data.get("type") == "keep_alive":
+        print("keep alive message")
+        return
+
     choreography = data["choreography"]
     robots = data["robots"]
     strategy = data["strategy"]
