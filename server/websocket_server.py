@@ -37,6 +37,7 @@ async def handler(websocket):
             except Exception:
                 print("exception in decode_message")
                 await websocket.send("error. retry")
+                raise
         except ConnectionClosedOK:
             print("Connection closed OK")
             break
