@@ -5,7 +5,7 @@ import asyncio
 managers = []
 
 
-async def control_initial_connect(robots, choreography, strategy):
+def control_initial_connect(robots, choreography, strategy):
     manager = Manager()
     managers.append(manager)
 
