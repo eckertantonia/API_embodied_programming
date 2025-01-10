@@ -1,19 +1,28 @@
 import asyncio
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
+from bleak.exc import BleakDeviceNotFoundError
 from spherov2 import scanner
+from spherov2.scanner import ToyNotFoundError
+from spherov2.types import Color
 
 from bolt import Bolt
 from choreography import Choreography
+from server.led_control import LEDControl
 
 
 class Manager:
     def __init__(self):
         self.bolts: List[Bolt] = []
-        self.loop = asyncio.get_running_loop()
+        self.choreography = None
+        self.strategy = None
+        self.led_control = LEDControl()
 
         # event um auf api verbindung zu warten
         self.connection_event = asyncio.Event()
+        self.executor = ThreadPoolExecutor()
 
     def _check_robot_in_list(self, name) -> Bolt:
         """
@@ -24,8 +33,9 @@ class Manager:
         """
         return next((bolt for bolt in self.bolts if bolt.name == name), None)
 
-    async def manage_bolts(self, bolts, choreography, strategy):
+    def connect_bolts(self, bolts: List[str], choreography, strategy):
         """
+        TODO: Fehlermanagement bei Verbindung
         Creates task in running loop, calls correlating async function.
 
         :param bolts:
@@ -34,65 +44,78 @@ class Manager:
         :return:
         """
 
-        tasks = [self._set_robot(bolt) for bolt in bolts]
-        await asyncio.gather(*tasks)
-        self.connection_event.set()
+        # TODO: bessere Loesung finden
+        self.choreography = choreography
+        self.strategy = strategy
 
-        await self._start_choreo(self.bolts, choreography, strategy)
+        for bolt in bolts:
+            self._set_robot(bolt)
 
-    # brauch ich die methode noch?
-    async def _manage_bolts_async(self, bolts, choreography, strategy):
-        tasks = [self._set_robot(bolt) for bolt in bolts]
-        await asyncio.gather(*tasks)
-        self.connection_event.set()
 
-        await self._start_choreo(self.bolts, choreography, strategy)
+    def _set_robot(self, name: str):
 
-    async def _set_robot(self, name):
+        try:
+            future = self.executor.submit(self._find_toy_blocking, name)
 
-        # Bolt schon in bolts[], dann verbindungsprozess abbrechen
-        # TODO check ob das wirklich funktioniert
-        if self._check_robot_in_list(name):
-            print(f"{name} existiert schon!")
-            return
+            toy = future.result()
 
-        bolt = await self._create_bolt(name)
-        self.bolts.append(bolt)
+            bolt = Bolt(toy)
+            self._open_api(bolt)
+            self.bolts.append(bolt)
+        except ToyNotFoundError as e:
+            print(f"ToyNotFoundError for {name}")
+        except Exception as e:
+            print(f"manager: toy {name} not found")
+            raise
 
-    async def _create_bolt(self, name) -> Bolt:
+    def _find_toy_blocking(self, name: str):
+        return scanner.find_toy(toy_name=name)
 
-        toy = await self.find_toy_with_retry(name)
-        if toy is None:
-            raise ValueError(f"Spielzeug '{name}' konnte nach zwei Versuchen nicht gefunden werden.")
-
-        print(f"Gefunden: {toy.name} ({toy.address})")
-        bolt = Bolt(toy)
-
-        return bolt
-
-    async def find_toy_with_retry(self, name):
+    def _open_api(self, bolt: Bolt):
         """
-        Sucht nach Bolt mit bestimmter Bezeichnung. Wenn Bolt im ersten Versuch nicht gefunden wird, wird ein zweiter Versuch gestartet. Wenn auch im zweiten Versuch kein Bolt gefunden wird, dann wird eine Exception geworfen.
-        TODO: Exception pruefen, welche wird geworfen, welche muss gefangen werden, gibt man das im Methoden-Kopf an? Eigene Exception werfen?
+        Funktion zum Öffnen der dauerhaften Bluetooth-Verbindung zum Bolt-Roboter.
+        Wenn die Verbindung nicht funktioniert, wird der Verbindungs-Versuch 3 mal wiederholt.
 
-        :param name: string Bolt-Bezeichnung
-        :return:
+        :param bolt: Bolt Instanz, die Verbindung zum Roboter hält
         """
-        for attempt in range(2):  # Maximal zwei Versuche
+        retries = 0
+        max_retries = 4
+        for attempt in range(max_retries):
             try:
-                toy = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: scanner.find_toy(toy_name=name)
-                )
-                if toy:
-                    return toy
-                print(f"Versuch {attempt + 1}: Kein Spielzeug gefunden. Wiederholen...")
-            except scanner.ToyNotFoundError as e:
-                print(f"Fehler bei Versuch {attempt + 1}: \"{e}\" für Spielzeug \"{name}\"")
-                raise
-            await asyncio.sleep(1)  # Kurze Pause vor erneutem Versuch
-        return None
+                retries += 1
+                bolt.toy_api.__enter__()
+                self.led_control.show_string(bolt, "Hi")
+                self.led_control.show_grouping(bolt)
+                # Wenn erfolgreich, Schleife verlassen
+                print(f"{bolt.name} erfolgreich verbunden!")
+                break
+            except TimeoutError as e:
+                print(f"TimeoutError für {bolt.name}. Versuch {retries} von {max_retries}: {e}")
+                if retries == max_retries:
+                    print(f"Maximale Anzahl von Versuchen für {bolt.name} erreicht. Abbruch.")
+                    raise
+            except BleakDeviceNotFoundError as e:
+                print(f"BleakDeviceNotFoundError in open_apis für {bolt.name}: {e}")
+                if retries == max_retries:
+                    print(f"Maximale Anzahl von Versuchen für {bolt.name} erreicht. Abbruch.")
+                    raise
+            except Exception as e:
+                print(f"Exception in open_apis für {bolt.name}: {e}")
+                if retries == max_retries:
+                    print(f"Maximale Anzahl von Versuchen für {bolt.name} erreicht. Abbruch.")
+                    raise
 
-    async def _start_choreo(self, robots, choreography, strategy):
+    def close_api(self):
+        """
+        Schließt die Verbindung zum Bolt-Roboter.
+
+        :param bolt: Bolt Instanz, die Verbindung zum Roboter hält
+        """
+
+        for bolt in self.bolts:
+            bolt.toy_api.__exit__(None, None, None)
+
+    def start_choreo(self):
         """
 
         :param robots: BoltGroup
@@ -100,6 +123,5 @@ class Manager:
         :param strategy: string
         :return:
         """
-        await self.connection_event.wait()
         choreo = Choreography()
-        await choreo.start_choreography(robots, choreography, strategy)
+        choreo.start_choreography(self.bolts, self.choreography, self.strategy)

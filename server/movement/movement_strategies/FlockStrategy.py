@@ -1,9 +1,9 @@
 from abc import ABC
 
-from server.movement.movement_strategies.MovementInterface import MovementInterface
+from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 
-class FlockStrategy(MovementInterface, ABC):
+class FlockStrategy(MovementStrategy, ABC):
     def __init__(self):
         pass
 

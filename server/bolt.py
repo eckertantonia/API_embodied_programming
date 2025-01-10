@@ -1,3 +1,5 @@
+import random
+
 from spherov2.sphero_edu import SpheroEduAPI
 
 
@@ -5,9 +7,10 @@ class Bolt:
     def __init__(self, toy):
         self.name = toy.name
         self.toy = toy
-        self.toyApi = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
+        self.toy_api = SpheroEduAPI(self.toy)  # API für den Sphero Toy initialisieren
         self.position = (0, 0)  # Standard-Startposition
         self.offset = 0 # Default 0, TODO berechnen
+        self.value = random.randint(0, 5)
 
     def update_position(self, new_pos):
         """
@@ -22,7 +25,7 @@ class Bolt:
         :return: SpheroEduApi-Instanz für den Bolt
         """
         try:
-            return self.toyApi
+            return self.toy_api
         except Exception as e:
             print(f"Exception in Bolt.get_spheroeduapi: {e}")
             raise
@@ -32,5 +35,5 @@ class Bolt:
         Kalibriert Kompass des Bolts, setzt den Winkel-Offset-Wert zu Norden bzw. 0°.
 
         """
-        self.toyApi.calibrate_compass()
-        self.offset = self.toyApi._SpheroEduAPI__compass_zero
+        self.toy_api.calibrate_compass()
+        self.offset = self.toy_api._SpheroEduAPI__compass_zero

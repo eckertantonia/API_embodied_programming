@@ -1,17 +1,19 @@
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
+import threading
 from typing import List
 
-from spherov2.types import Color
-
-from BoltGroup import BoltGroup
 from bolt import Bolt
+from bolt_group import BoltGroup
 from movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 from server.choreographies.FlockChoreo import FlockChoreo
+from server.choreographies.MixChoreo import MixChoreo
+from server.led_control import LEDControl
+from server.movement.movement_strategies.CirclingStrategy import CirclingStrategy
 
 STRATEGIES = {
-    "forward": MoveForwardStrategy
+    "forward": MoveForwardStrategy,
+    "circle": CirclingStrategy
 }
+
 
 # TODO: Strategien in Manager verwalten?
 def _get_strategy_instance(strategy):
@@ -24,58 +26,37 @@ def _get_strategy_instance(strategy):
 
 class Choreography:
     def __init__(self):
-        self.movementStrategies = None
-        self.boltGroup = BoltGroup()
-        self.loop = asyncio.get_running_loop()
+        self.bolt_group = BoltGroup()
 
-    async def start_choreography(self, bolt_group: List[Bolt], choreography, strategy):
+    def start_choreography(self, robot_group: List[Bolt], choreography, strategy):
         """
         Initialer Start jeder Choreographie.
 
-        :param bolt_group: List[Bolt], BoltGroup
-        :param choreography: string
-        :param strategy: string
+        :param robot_group: List[Bolt], BoltGroup
+        :param choreography: str
+        :param strategy: str
         :return:
         """
 
-        # Bolts als Gruppe definieren
+        self.create_bolt_group(robot_group)
+
+        # choreo logik
+        if choreography == "flock":
+            flock = FlockChoreo(self.bolt_group)
+
+            flock.start_choreo()
+
+        elif choreography == "mix":
+            mix = MixChoreo()
+
+            mix.start_choreo(self.bolt_group, _get_strategy_instance(strategy))
+
+        elif choreography == "color":
+            ledcontrol = LEDControl()
+            ledcontrol.show_grouping(self.bolt_group[0])
+
+
+    def create_bolt_group(self, bolt_group):
+
         for bolt in bolt_group:
-            self.boltGroup.assign_bolt(bolt)
-
-        if choreography == "move":
-
-            self.loop.create_task(self.choreo_async(strategy))
-
-        elif choreography == "flock":
-            flock = FlockChoreo(self.boltGroup)
-
-            await flock.start_choreo()
-
-
-    # TODO in choreography part auslagern?
-    async def choreo_async(self, strategy):
-        """
-
-        :param strategy: MovementStrategy
-        :return:
-        """
-        tasks = [self.task(strategy, bolt) for bolt in self.boltGroup]
-        await asyncio.gather(*tasks)
-
-    async def task(self, strategy, bolt):
-        print("task")
-        points = [(0, 1), (0, 0)]  # [] von Punkten
-        with ThreadPoolExecutor() as executor:
-            def sync_task():
-                try:
-                    with bolt.get_spheroeduapi() as bolt_api:
-                        bolt.calibrate(bolt_api)
-                        bolt_api.set_matrix_character("|", color=Color(r=100, g=0, b=100))
-                        strategy_instance = _get_strategy_instance(strategy)
-                        strategy_instance.drive(bolt_api, points, offset=bolt.offset)
-
-                except Exception as e:
-                    print(f"Error in sync_taks: {e}")
-                    raise
-
-            await self.loop.run_in_executor(executor, sync_task)
+            self.bolt_group.assign_bolt(bolt)

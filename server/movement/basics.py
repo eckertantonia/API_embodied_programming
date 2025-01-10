@@ -1,4 +1,6 @@
 import math
+import threading
+import time
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,7 +23,7 @@ def calculate_hermite_curve(p0, p1, m0, m1, anzahl_punkte):
         list: Liste von Punkten (x, y) entlang der Kurve.
     """
     # gleichmaessig verteiltes array mit num werten zwischen start und stop
-    # erzeugt werte fuer t entlang der kurve, 
+    # erzeugt werte fuer t entlang der kurve,
     # t ist array aus werten
     t = np.linspace(0, 1, anzahl_punkte)
 
@@ -130,7 +132,7 @@ def calculate_commands(points, compass_offset):
         x1, y1 = points[i - 1]
         x2, y2 = points[i]
         dx, dy = x2 - x1, y2 - y1
-        distance = np.sqrt(dx ** 2 + dy ** 2) *10 # Skalierung der Distanz
+        distance = (np.sqrt(dx ** 2 + dy ** 2)) *20 # Mit Skalierung
         angle = (360 - math.degrees(math.atan2(dy, dx))) % 360
         # Transformiere Winkel ins globale Koordinatensystem
         global_angle = (angle + compass_offset) % 360
@@ -154,10 +156,9 @@ def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_o
         None
     """
     try:
-        anzahl_punkte = 5
         tangents = calculate_tangents(points, initial_heading=initial_heading)
 
-        spline = calculate_hermite_spline(points, tangents, anzahl_punkte)
+        spline = calculate_hermite_spline(points, tangents, len(points))
         commands = calculate_commands(spline, compass_offset=compass_offset)
 
         _basic_drive(robot, commands, speed)
@@ -166,35 +167,61 @@ def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_o
         raise
 
 
-def _basic_drive(robot, commands, speed=50):
+def _basic_drive(robot, commands, speed=70):
     """
+    TODO: speed 50 ist ein bisschen sehr gemaechlich
     holt Schwung und bremst ab
     :param robot:
     :param commands:
     :return:
     """
 
+    # Gesamtdistanz berechnen
+    total_distance = 0
+    for i in commands:
+        total_distance += i[0]
+
+    calculated_distance = total_distance # in cm
+
+    # Falls die Distanz 0 ist, beende die Funktion
+    if total_distance == 0:
+        print("Gesamtdistanz ist 0. Keine Bewegung erforderlich.")
+        return
+
     first_distance, first_angle = commands[0]
-    last_distance, last_angle = commands[-1]
 
-    # schwung holen
-    # robot.set_matrix_character("A", color=Color(r=100, g=0, b=100))
-    # robot.set_heading(int(first_angle))
-    # robot.roll(int(first_angle), int(-speed / 4), 0.5)
-    # robot.set_heading(int(first_angle))
-    # robot.roll(int(first_angle), int(speed), (first_distance/ speed))
+    robot.roll(int(first_angle), 0, 1)
+    start_distance = robot.get_distance()
 
-    for distance, angle in commands:
-        duration = (distance / speed)
-        # robot.scroll_matrix_text(str(angle), Color(r=0, g=100, b=0), 5, False)
-        robot.roll(int(angle), speed, 0.2)
-        # time.sleep(distance / speed)  # Warte proportional zur Strecke
+    # Starte das Fahren mit den Commands
+    thread = threading.Thread(target=control_distance, args=(robot, commands, calculated_distance, speed, start_distance))
+    thread.start()
+    thread.join()
 
-    # abbremsen
-    # TODO in Uni auf Teppich ohne Hindernisse probieren
-    #  robot.roll(int(last_angle), int(-speed / 4), 0.5)
-    # robot.set_heading(int(last_angle))
+    print(f"berechnete Distanz: {calculated_distance}")
+    print(f"Gesamtdistanz {robot.get_distance() - start_distance}")
 
+
+def control_distance(robot, commands, calculated_distance, speed, start_distance):
+    """
+    Kontrolliert den Roboter basierend auf den Befehlen und passt das Heading an.
+    """
+    cur_distance = 0
+    robot.set_speed(speed)
+
+    for cmd_distance, cmd_angle in commands:
+        robot.set_heading(int(cmd_angle))
+        while cur_distance < cmd_distance:
+            cur_distance = robot.get_distance() - start_distance
+            print(f"Aktuelle Distanz: {cur_distance} / Ziel: {cmd_distance} / heading: {cmd_angle}")
+            time.sleep(0.001)
+
+        # Überschuss subtrahieren für den nächsten Schritt
+        start_distance += cur_distance
+        cur_distance = 0  # Reset für den nächsten Abschnitt
+
+    robot.set_speed(0)  # Anhalten, wenn alle Kommandos abgearbeitet sind
+    print("Alle Befehle ausgeführt.")
 
 def plotSpline(points, initial_heading):
     """
