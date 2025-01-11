@@ -19,7 +19,7 @@ def handle_client(client_socket, addr):
             response = "accepted"
             client_socket.send(response.encode("utf-8"))
     except Exception as e:
-        print(f"Error when hanlding client: {e}")
+        print(f"Error when handling client: {e}")
     finally:
         client_socket.close()
         print(f"Connection to client ({addr[0]}:{addr[1]}) closed")
@@ -27,13 +27,12 @@ def handle_client(client_socket, addr):
 def run_server():
     server_ip = "127.0.0.1"
     port = 8765
+    # create a socket object
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # bind the socket to a specific address and port
+    server.bind((server_ip, port))
+
     try:
-        # create a socket object
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        # bind the socket to a specific address and port
-        server.bind((server_ip, port))
-
         # listen for incoming connections
         server.listen(0)
         print(f"Listening on {server_ip}:{port}")
@@ -45,10 +44,6 @@ def run_server():
         # threading um mehrere clients zu akzeptieren
         handle_client(client_socket, client_address)
 
-        # close connection socket with the client
-        client_socket.close()
-        print("Connection to client closed")
-        # close server socket
     except Exception as e:
         print(f"Error: {e}")
     finally:

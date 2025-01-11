@@ -30,11 +30,14 @@ class CirclingStrategy(MovementStrategy, ABC):
                 robot_down = robots.bolts[0]
                 robot_up = robots.bolts[1]
 
-            methods_to_run = [
-                (self.move_up, (robot_up,)),
-                (self.move_down, (robot_down,))
-            ]
-            self.run_methods_in_threads_with_params(methods_to_run)
+            self.move_up(robot_up)
+            self.move_down(robot_down)
+
+            # methods_to_run = [
+            #     (self.move_up, (robot_up,)),
+            #     (self.move_down, (robot_down,))
+            # ]
+            # self.run_methods_in_threads_with_params(methods_to_run)
         else:
             print(f"CirclingStrategy: falsche Anzahl robots")
             # raises error, weil liste falsche laenge

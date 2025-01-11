@@ -136,7 +136,7 @@ def calculate_commands(points, compass_offset):
         angle = (360 - math.degrees(math.atan2(dy, dx))) % 360
         # Transformiere Winkel ins globale Koordinatensystem
         global_angle = (angle + compass_offset) % 360
-        commands.append((distance, global_angle))
+        commands.append((int(distance), int(global_angle)))
     return commands
 
 
@@ -159,7 +159,8 @@ def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_o
         tangents = calculate_tangents(points, initial_heading=initial_heading)
 
         spline = calculate_hermite_spline(points, tangents, len(points))
-        commands = calculate_commands(spline, compass_offset=compass_offset)
+        #commands = calculate_commands(spline, compass_offset=compass_offset)
+        commands = calculate_commands(points, compass_offset=compass_offset)
 
         _basic_drive(robot, commands, speed)
     except Exception as e:
@@ -190,35 +191,43 @@ def _basic_drive(robot, commands, speed=70):
 
     first_distance, first_angle = commands[0]
 
-    robot.roll(int(first_angle), 0, 1)
+    robot.roll(first_angle, 0, 1)
     start_distance = robot.get_distance()
 
     # Starte das Fahren mit den Commands
-    thread = threading.Thread(target=control_distance, args=(robot, commands, calculated_distance, speed, start_distance))
-    thread.start()
-    thread.join()
+    # thread = threading.Thread(target=control_distance, args=(robot, commands, calculated_distance, speed, start_distance))
+    # thread.start()
+    # thread.join()
+    control_distance(robot, commands, speed)
 
     print(f"berechnete Distanz: {calculated_distance}")
     print(f"Gesamtdistanz {robot.get_distance() - start_distance}")
 
 
-def control_distance(robot, commands, calculated_distance, speed, start_distance):
+def control_distance(robot, commands, speed):
     """
     Kontrolliert den Roboter basierend auf den Befehlen und passt das Heading an.
     """
-    cur_distance = 0
-    robot.set_speed(speed)
+    # approximieren über zeit v(t) = x(t) - x(t-1)/ dt
 
-    for cmd_distance, cmd_angle in commands:
-        robot.set_heading(int(cmd_angle))
-        while cur_distance < cmd_distance:
-            cur_distance = robot.get_distance() - start_distance
-            print(f"Aktuelle Distanz: {cur_distance} / Ziel: {cmd_distance} / heading: {cmd_angle}")
-            time.sleep(0.001)
+    for distance, angle in commands:
+        time.sleep(0.5)
+        robot.set_heading(angle)
+        time.sleep(0.5)
+        start_distance = robot.get_distance() # robot setzt heading
+        cur_distance = 0
+        robot.set_speed(speed)
+        while cur_distance < distance -4:
+            cur_distance = robot.get_distance() - start_distance # robot faehrt bis distance erreicht
+            print(f"Aktuelle Distanz: {cur_distance} / Ziel: {distance} / heading: {robot.get_heading()}")
+            print(f"geschwindigkeit: {robot.get_velocity()}")
+            time.sleep(0.01)
 
-        # Überschuss subtrahieren für den nächsten Schritt
-        start_distance += cur_distance
-        cur_distance = 0  # Reset für den nächsten Abschnitt
+        robot.set_speed(0)
+        stop_distance = robot.get_distance() - start_distance
+        print(f"distanz nach stopp: {stop_distance}")
+        # Start fuer naechsten Abschnitt
+
 
     robot.set_speed(0)  # Anhalten, wenn alle Kommandos abgearbeitet sind
     print("Alle Befehle ausgeführt.")
