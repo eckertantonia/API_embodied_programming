@@ -19,3 +19,6 @@ class BoltGroup:
     def __getitem__(self, index: int) -> Bolt:
         """Retrieve a bolt by index."""
         return self.bolts[index]
+
+    def __len__(self):
+        return len(self.bolts)

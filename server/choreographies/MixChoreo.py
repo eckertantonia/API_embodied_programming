@@ -5,7 +5,7 @@ from spherov2.types import Color
 
 from server.bolt import Bolt
 from server.bolt_group import BoltGroup
-from server.movement.movement_strategies.InLineStrategy import InLineStrategy
+from server.movement.movement_strategies.InLineXStrategy import InLineXStrategy
 from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 from server.led_control import LEDControl
@@ -13,7 +13,7 @@ from server.led_control import LEDControl
 class MixChoreo:
     def __init__(self):
         self.move_forward_strategy = MoveForwardStrategy()
-        self.in_line_strategy = InLineStrategy()
+        self.in_line_strategy = InLineXStrategy()
         self.circle_group = BoltGroup()
         self.led_control = LEDControl()
 

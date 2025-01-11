@@ -3,6 +3,8 @@
 import socket
 import server.messaging.messaging_service as messaging
 
+import logging_config
+
 def handle_client(client_socket, addr):
     try:
         while True:
