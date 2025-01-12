@@ -163,6 +163,7 @@ def drive_hermite_curve(robot, points, speed=50, initial_heading=None, compass_o
         commands = calculate_commands(points, compass_offset=compass_offset)
 
         _basic_drive(robot, commands, speed)
+        robot.update_position(points[-1])
     except Exception as e:
         print(f"Exception in drive_hermite_curve: {e}")
         raise
