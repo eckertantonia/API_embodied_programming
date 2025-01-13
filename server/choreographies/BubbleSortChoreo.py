@@ -9,14 +9,13 @@ class BubbleSortChoreo:
         self.values = values
 
     def choreo(self):
-
+        self.set_values()
         # algorithmus
 
         pass
 
-    def positioning(self):
+    def set_values(self):
         for i, bolt in enumerate(self.bolt_group.bolts):
             bolt.calibrate()
-            bolt.position = (0, i)
             bolt.value = self.values[i]
-            bolt.toy_api.set_matrix_character(f"{i}", color=Color(r=100, g=0, b=100))
+            bolt.toy_api.set_matrix_character(f"{bolt.value}", color=Color(r=100, g=0, b=100))

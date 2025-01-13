@@ -13,7 +13,12 @@ class ClientAPI:
         """Choreographie starten."""
         message = MessagingClient.continuing_message(choreography)
 
-        return self.client.communicate_with_server(message)
+        print(self.client.communicate_with_server(message))
+
+    def select_choreography(self, choreography, values):
+        message = MessagingClient.select_choreography_message(choreography, values)
+
+        print(self.client.communicate_with_server(message))
 
     def send_custom_message(self, custom_data: dict):
         """Benutzerdefinierte Nachricht senden."""
@@ -21,7 +26,7 @@ class ClientAPI:
             "action": "custom",
             "data": custom_data
         }
-        return self.client.communicate_with_server(message)
+        print(self.client.communicate_with_server(message))
 
     def connect_server(self):
         self.client.connect_to_server()

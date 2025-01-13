@@ -1,23 +1,23 @@
 from manager import Manager
-import asyncio
-
-# brauch ich vielleicht gar nicht
-managers = []
 
 
-def control_initial_connect(robots, choreography, strategy):
-    manager = Manager()
-    managers.append(manager)
+class Controller:
+    def __init__(self):
+        self.manager = None
 
-    manager.connect_bolts(robots, choreography, strategy)
+    def control_initial_connect(self, robots, choreography, strategy):
+        self.manager = Manager(choreography, strategy)
 
-def control_connected():
-    manager = managers[0]
+        position_string = self.manager.connect_bolts(robots)
 
-    manager.start_choreo()
+        return f"Ordne die Roboter in folgender Reihenfolge an: \n" + position_string
 
-def control_disconnect():
-    manager = managers[0]
+    def control_disconnect(self):
+        self.manager.close_api()
+        return "Apis closed."
 
-    manager.close_api()
-    print("Apis closed.")
+    def control_choreography(self):
+        self.manager.start_choreo()
+
+    def control_connected(self):
+        pass

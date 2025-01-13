@@ -1,12 +1,10 @@
 import asyncio
-import threading
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from bleak.exc import BleakDeviceNotFoundError
 from spherov2 import scanner
 from spherov2.scanner import ToyNotFoundError
-from spherov2.types import Color
 
 from bolt import Bolt
 from choreography import Choreography
@@ -14,7 +12,7 @@ from server.led_control import LEDControl
 
 
 class Manager:
-    def __init__(self):
+    def __init__(self, choreography=None, strategy=None):
         self.bolts: List[Bolt] = []
         self.choreography = None
         self.strategy = None
@@ -33,26 +31,23 @@ class Manager:
         """
         return next((bolt for bolt in self.bolts if bolt.name == name), None)
 
-    def connect_bolts(self, bolts: List[str], choreography, strategy):
+    def connect_bolts(self, robots):
         """
         TODO: Fehlermanagement bei Verbindung
         Creates task in running loop, calls correlating async function.
 
-        :param bolts:
-        :param choreography:
-        :param strategy:
         :return:
         """
+        for i, bolt in enumerate(robots):
+            self._set_robot(bolt, i)
 
-        # TODO: bessere Loesung finden
-        self.choreography = choreography
-        self.strategy = strategy
+        position_string = ""
+        for i in range(0, len(robots)):
+            position_string += f"{i}     "
 
-        for bolt in bolts:
-            self._set_robot(bolt)
+        return position_string
 
-
-    def _set_robot(self, name: str):
+    def _set_robot(self, name: str, position):
 
         try:
             future = self.executor.submit(self._find_toy_blocking, name)
@@ -60,6 +55,7 @@ class Manager:
             toy = future.result()
 
             bolt = Bolt(toy)
+            bolt.position = (position, 0)
             self._open_api(bolt)
             self.bolts.append(bolt)
         except ToyNotFoundError as e:

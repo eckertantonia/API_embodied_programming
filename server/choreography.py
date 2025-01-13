@@ -1,4 +1,3 @@
-import threading
 from typing import List
 
 from bolt import Bolt
@@ -54,7 +53,6 @@ class Choreography:
         elif choreography == "color":
             ledcontrol = LEDControl()
             ledcontrol.show_grouping(self.bolt_group[0])
-
 
     def create_bolt_group(self, bolt_group):
 

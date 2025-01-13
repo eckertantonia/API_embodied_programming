@@ -51,10 +51,6 @@ class MixChoreo:
             thread.join()
 
     def assign_start_pos(self, bolt_group: BoltGroup):
-        # for i in range(len(bolt_group.bolts)):
-        #     bolt_group[i].calibrate()
-        #     bolt_group[i].position = (0, i)
-        #     bolt_group[i].toy_api.set_matrix_character(f"{i}", color=Color(r=100, g=0, b=100))
 
         positions = [(0,0), (1,0), (2,0), (3,0), (4,0)]
         for bolt in bolt_group:

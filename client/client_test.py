@@ -2,6 +2,8 @@ import json
 import socket
 
 import client.messaging.messaging_client as messaging
+
+
 class WebsocketClient:
     def __init__(self):
         self.server_ip = "127.0.0.1"
@@ -29,7 +31,6 @@ class WebsocketClient:
         self.socket.send(json_message.encode("utf-8")[:1024])
         print(f"gesendet: {json_message}")
 
-
     def _receive_message(self) -> dict:
         if not self.socket:
             raise ConnectionError("Keine aktive Verbindung zum Server.")
@@ -40,4 +41,4 @@ class WebsocketClient:
     def communicate_with_server(self, message):
         self._send_message(message)
         # TODO messaging anpassen
-        return self._receive_message()
+        return messaging.decode_message(self._receive_message())

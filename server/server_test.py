@@ -5,8 +5,6 @@ import threading
 
 import server.messaging.messaging_service as messaging
 
-import logging_config
-
 
 def handle_client(client_socket, addr):
     try:
@@ -20,10 +18,10 @@ def handle_client(client_socket, addr):
                 break
             else:
                 # TODO: messaging_service richtig einbinden, am liebsten ohne async :)
-                messaging.decode_message(request)
+                response = messaging.decode_message(request)
             print(f"Received: {request}")
+
             # convert and send accept response to the client
-            response = "accepted"
             client_socket.send(response.encode("utf-8"))
     except Exception as e:
         print(f"Error when handling client: {e}")
@@ -39,7 +37,7 @@ def run_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # bind the socket to a specific address and port
     server.bind((server_ip, port))
-    
+
     try:
         # listen for incoming connections
         server.listen(0)
