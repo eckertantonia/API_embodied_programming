@@ -1,7 +1,7 @@
 import json
 import socket
 
-import client.messaging.messaging_client as messaging
+import client.messaging.messaging_service as messaging
 
 
 class WebsocketClient:

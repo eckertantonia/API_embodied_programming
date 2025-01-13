@@ -1,4 +1,4 @@
-import client.messaging.messaging_client as MessagingClient
+import client.messaging.messaging_service as MessagingService
 from client.client_test import WebsocketClient
 
 
@@ -11,12 +11,12 @@ class ClientAPI:
 
     def start_choreography(self, choreography):
         """Choreographie starten."""
-        message = MessagingClient.continuing_message(choreography)
+        message = MessagingService.continuing_message(choreography)
 
         print(self.client.communicate_with_server(message))
 
     def select_choreography(self, choreography, values):
-        message = MessagingClient.select_choreography_message(choreography, values)
+        message = MessagingService.select_choreography_message(choreography, values)
 
         print(self.client.communicate_with_server(message))
 
