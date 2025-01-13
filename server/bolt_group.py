@@ -4,9 +4,11 @@ import uuid
 
 
 class BoltGroup:
-    def __init__(self):
+    def __init__(self, bolts=None):
         self.id = f"Group-{uuid.uuid4().int % 1000}"
-        self.bolts: List[Bolt] = []
+        if bolts is None:
+            bolts = []
+        self.bolts: List[Bolt] = bolts
 
     def assign_bolt(self, bolt: Bolt):
         # TODO check ob Bolt schon in Gruppe
