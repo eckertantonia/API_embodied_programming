@@ -1,7 +1,10 @@
 #!/usr/bin/env python3.8
 
 import socket
+import threading
+
 import server.messaging.messaging_service as messaging
+
 
 def handle_client(client_socket, addr):
     try:
@@ -24,15 +27,16 @@ def handle_client(client_socket, addr):
         client_socket.close()
         print(f"Connection to client ({addr[0]}:{addr[1]}) closed")
 
+
 def run_server():
     server_ip = "127.0.0.1"
     port = 8765
-    try:
-        # create a socket object
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # create a socket object
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # bind the socket to a specific address and port
-        server.bind((server_ip, port))
+    # bind the socket to a specific address and port
+    server.bind((server_ip, port))
+    try:
 
         # listen for incoming connections
         server.listen(0)
@@ -43,16 +47,14 @@ def run_server():
         print(f"Accepted connection from {client_address[0]}:{client_address[1]}")
 
         # threading um mehrere clients zu akzeptieren
-        handle_client(client_socket, client_address)
-
-        # close connection socket with the client
-        client_socket.close()
-        print("Connection to client closed")
+        thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+        thread.start()
         # close server socket
     except Exception as e:
         print(f"Error: {e}")
     finally:
         server.close()
+
 
 if __name__ == "__main__":
     run_server()
