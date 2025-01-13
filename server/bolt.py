@@ -33,7 +33,21 @@ class Bolt:
     def calibrate(self):
         """
         Kalibriert Kompass des Bolts, setzt den Winkel-Offset-Wert zu Norden bzw. 0°.
-
         """
         self.toy_api.calibrate_compass()
-        self.offset = self.toy_api._SpheroEduAPI__compass_zero
+        offset1 = self.toy_api._SpheroEduAPI__compass_zero
+        print(f"offset {offset1}")
+        self.toy_api.calibrate_compass()
+        offset2 = self.toy_api._SpheroEduAPI__compass_zero
+        print(f"offset {offset2}")
+        self.toy_api.calibrate_compass()
+        offset3 = self.toy_api._SpheroEduAPI__compass_zero
+        print(f"offset {offset3}")
+        self.toy_api.calibrate_compass()
+        offset4 = self.toy_api._SpheroEduAPI__compass_zero
+        print(f"offset {offset4}")
+
+        # TODO: gewichteter Mittelwert?
+        # ausblick kalibrierung von außen unterstützt
+        self.offset = (offset4+offset3+offset2+offset1)/4
+        print(f"offset final: {self.offset}")

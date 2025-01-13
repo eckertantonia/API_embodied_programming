@@ -8,25 +8,46 @@ from server.movement.movement_strategies.MovementStrategy import MovementStrateg
 logger = logging.getLogger(__name__)
 
 
-class MoveForwardStrategy(MovementStrategy):
+class InLineXStrategy(MovementStrategy):
     def __init__(self):
+        self.x_coord = 0
         self.points = []
 
     def drive(self, robots: BoltGroup, points: []):
         """
-        Fuehrt die MoveForwardStrategy fuer alle Elemente aus robots aus.
+        Fuehrt die InLineXStrategy aus, indem die Positionen der robots auf der X-Achse berechnet werden und die robots anschließend auf diese Position bewegt werden.
 
         :param robots: BoltGroup
-        :param points: int-Tupel, Ziel-Koordinaten der Elemente aus robots in Reihenfolge der Elemente
+        :param points: int-Tupel, Wert der X-Koordinate
         :raises Exception
         """
-        self.points = points
+
+        self.x_coord = points[0]
         try:
+            self._calculate_points(robots)
+
             self._execute_threads(robots, basic_moves.drive_hermite_curve)
 
         except Exception as e:
-            logger.exception(f"Exception in MoveForwardStrategy: {e}")
+            logger.exception(f"Exception in InLineXStrategy: {e}")
             raise
+
+    def _calculate_points(self, robots: BoltGroup):
+        """
+        Berechnet die Position auf der x-Achse fuer jedes Element aus robots.
+
+        :param robots: BoltGroup
+        :return:
+        """
+
+        for robot in robots:
+
+            new_pos = (self.x_coord, robot.position[1])
+
+            while new_pos in self.points:
+                new_pos = (self.x_coord, robot.position[1] + 1)
+
+            self.points.append(new_pos)
 
     def _execute_threads(self, robots, target_method):
         """
@@ -34,7 +55,7 @@ class MoveForwardStrategy(MovementStrategy):
 
         :param robots: BoltGroup
         :param target_method:
-        :raises Exception
+        :return:
         """
 
         threads = []

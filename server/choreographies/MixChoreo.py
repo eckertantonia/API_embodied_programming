@@ -5,7 +5,7 @@ from spherov2.types import Color
 
 from server.bolt import Bolt
 from server.bolt_group import BoltGroup
-from server.movement.movement_strategies.InLineStrategy import InLineStrategy
+from server.movement.movement_strategies.InLineXStrategy import InLineXStrategy
 from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 from server.led_control import LEDControl
@@ -13,7 +13,7 @@ from server.led_control import LEDControl
 class MixChoreo:
     def __init__(self):
         self.move_forward_strategy = MoveForwardStrategy()
-        self.in_line_strategy = InLineStrategy()
+        self.in_line_strategy = InLineXStrategy()
         self.circle_group = BoltGroup()
         self.led_control = LEDControl()
 
@@ -61,28 +61,30 @@ class MixChoreo:
             bolt.calibrate()
             if bolt.name == "SB-8EA0":
                 bolt.update_position(positions[0])
-                self.led_control.show_character(bolt, "0")
+                self.led_control.show_character(bolt, bolt.value)
             elif bolt.name == "SB-51FA":
                 bolt.update_position(positions[1])
-                self.led_control.show_character(bolt, "1")
+                self.led_control.show_character(bolt,  bolt.value)
                 self.circle_group.assign_bolt(bolt)
             elif bolt.name == "SB-231B":
                 bolt.update_position(positions[2])
-                self.led_control.show_character(bolt, "2")
+                self.led_control.show_character(bolt,  bolt.value)
                 self.circle_group.assign_bolt(bolt)
             elif bolt.name == "SB-3DAB":
                 bolt.update_position(positions[3])
-                self.led_control.show_character(bolt, "3")
+                self.led_control.show_character(bolt,  bolt.value)
                 # self.circle_group.assign_bolt(bolt)
             elif bolt.name == "SB-025F":
                 bolt.update_position(positions[4])
-                self.led_control.show_character(bolt, "4")
+                self.led_control.show_character(bolt,  bolt.value)
 
     def move_forward(self, bolt:Bolt):
 
         points = [bolt.position, (bolt.position[0], bolt.position[1]+3)]
         print(f"{bolt.name}: ")
-        self.move_forward_strategy.drive(bolt, points)
+        group = BoltGroup()
+        group.assign_bolt(bolt)
+        self.move_forward_strategy.drive(group, points)
 
         print(f"velocity: {bolt.toy_api.get_velocity()}")
         print(f"acceleration: {bolt.toy_api.get_acceleration()}")
