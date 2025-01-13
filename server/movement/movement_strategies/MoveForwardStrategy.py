@@ -12,7 +12,7 @@ class MoveForwardStrategy(MovementStrategy):
     def __init__(self):
         self.points = []
 
-    def drive(self, robots: BoltGroup, points):
+    def drive(self, robots: BoltGroup, points: []):
         """
         Fuehrt die MoveForwardStrategy fuer alle Elemente aus robots aus.
 
@@ -27,9 +27,6 @@ class MoveForwardStrategy(MovementStrategy):
         except Exception as e:
             logger.exception(f"Exception in MoveForwardStrategy: {e}")
             raise
-
-    def _calculate_points(self):
-        pass
 
     def _execute_threads(self, robots, target_method):
         """

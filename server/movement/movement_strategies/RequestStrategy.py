@@ -1,6 +1,5 @@
 import logging
 import threading
-from abc import ABC
 
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
@@ -10,17 +9,17 @@ from server.movement.movement_strategies.MovementStrategy import MovementStrateg
 logger = logging.getLogger(__name__)
 
 
-class RequestStrategy(MovementStrategy, ABC):
+class RequestStrategy(MovementStrategy):
     def __init__(self):
         self.requester_part_1 = []
         self.requester_part_2 = []
         self.requester_part_3 = []
         self.follower_part_2 = []
         self.follower_part_3 = []
-        self.requester: Bolt
-        self.follower: Bolt
+        self.requester: Bolt = None
+        self.follower: Bolt = None
 
-    def drive(self, robots: BoltGroup, points):
+    def drive(self, robots: BoltGroup, points: []):
         """
         Fuehrt die RequestStrategy aus, indem die Positionen fuer einen auffordernden Bolt und einen folgenden Bolt berechnet und anschliessend bewegt werden.
 
@@ -62,9 +61,9 @@ class RequestStrategy(MovementStrategy, ABC):
         xf, yf = self.follower.position
 
         # requester coords
-        p_0 = (xr,yr)
+        p_0 = (xr, yr)
         p_1 = (xf, yr)
-        p_2 = (xf, yf+1)
+        p_2 = (xf, yf + 1)
         self.requester_part_1 = [p_0, p_1, p_2]
 
         p_3 = (xf, yr)
@@ -74,7 +73,7 @@ class RequestStrategy(MovementStrategy, ABC):
         diff_point_1_2 = xr - xf
         drive_len = diff_point_1_2 / 4
 
-        p_5 = (xr+drive_len, yr)
+        p_5 = (xr + drive_len, yr)
         p_6 = (xr, yr)
         self.requester_part_3 = [p_4, p_5, p_6]
 
@@ -82,11 +81,10 @@ class RequestStrategy(MovementStrategy, ABC):
 
         pf_0 = (xf, yf)
         pf_1 = (xf, yr)
-        pf_2 = (xf-drive_len, yr)
+        pf_2 = (xf - drive_len, yr)
         pf_3 = (xf, yr)
 
         self.follower_part_2 = [pf_0, pf_1, pf_2, pf_3]
-
 
     def _execute_threads(self, target_method):
         """

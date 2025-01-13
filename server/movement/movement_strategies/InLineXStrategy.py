@@ -1,6 +1,5 @@
 import logging
 import threading
-from abc import ABC
 
 import server.movement.basics as basic_moves
 from server.bolt_group import BoltGroup
@@ -9,12 +8,12 @@ from server.movement.movement_strategies.MovementStrategy import MovementStrateg
 logger = logging.getLogger(__name__)
 
 
-class InLineXStrategy(MovementStrategy, ABC):
+class InLineXStrategy(MovementStrategy):
     def __init__(self):
         self.x_coord = 0
         self.points = []
 
-    def drive(self, robots: BoltGroup, points):
+    def drive(self, robots: BoltGroup, points: []):
         """
         Fuehrt die InLineXStrategy aus, indem die Positionen der robots auf der X-Achse berechnet werden und die robots anschließend auf diese Position bewegt werden.
 

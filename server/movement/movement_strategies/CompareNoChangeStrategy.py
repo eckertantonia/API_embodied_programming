@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 class CompareNoChangeStrategy(MovementStrategy):
     def __init__(self):
         self.points = []
-        self.robot_1: Bolt
-        self.robot_2: Bolt
+        self.robot_1: Bolt = None
+        self.robot_2: Bolt = None
         self.robot_1_coords = []
         self.robot_2_coords = []
 
-    def drive(self, robots: BoltGroup, points):
+    def drive(self, robots: BoltGroup, points: []):
         """
         Fuehrt die MoveForwardStrategy fuer alle Elemente aus robots aus.
 
@@ -27,12 +27,8 @@ class CompareNoChangeStrategy(MovementStrategy):
         """
         self.points = points
 
-        if robots[0].position[0] < robots[1].position[0]:
-            self.robot_1 = robots[0]
-            self.robot_2 = robots[1]
-        else:
-            self.robot_1 = robots[1]
-            self.robot_2 = robots[0]
+        sorted_robots = sorted(robots, key=lambda r: r.position[0])
+        self.robot_1, self.robot_2 = sorted_robots
 
         try:
             self._execute_threads(robots, basic_moves.drive_hermite_curve)

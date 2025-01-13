@@ -82,7 +82,9 @@ class MixChoreo:
 
         points = [bolt.position, (bolt.position[0], bolt.position[1]+3)]
         print(f"{bolt.name}: ")
-        self.move_forward_strategy.drive(bolt, points)
+        group = BoltGroup()
+        group.assign_bolt(bolt)
+        self.move_forward_strategy.drive(group, points)
 
         print(f"velocity: {bolt.toy_api.get_velocity()}")
         print(f"acceleration: {bolt.toy_api.get_acceleration()}")
