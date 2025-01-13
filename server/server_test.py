@@ -10,8 +10,10 @@ def handle_client(client_socket, addr):
     try:
         while True:
             # receive and print client messages
-            request = client_socket.recv(1024).decode("utf-8")
-            if request.lower() == "close":
+            request = client_socket.recv(1024).decode("utf-8").strip()
+            if not request:
+                continue
+            elif request.lower() == "close":
                 client_socket.send("closed".encode("utf-8"))
                 break
             else:

@@ -1,40 +1,43 @@
+import json
 import socket
 
 import client.messaging.messaging_client as messaging
+class WebsocketClient:
+    def __init__(self):
+        self.server_ip = "127.0.0.1"
+        self.server_port = 8765
+        self.socket = None
 
-def run_client():
-    # create a socket object
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    def connect_to_server(self):
 
-    server_ip = "127.0.0.1"  # replace with the server's IP address
-    server_port = 8765  # replace with the server's port number
-    # establish connection with server
-    client.connect((server_ip, server_port))
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((self.server_ip, self.server_port))
 
-    try:
-        while True:
-            # get input message from user and send it to the server
-            msg = messaging.continuing_message()
+        print(f"Verbunden mit Server.")
 
-            client.send(msg.encode("utf-8")[:1024])
+    def disconnect_from_server(self):
+        if self.socket:
+            self.socket.close()
+            self.socket = None
+            print("Verbindung mit Server getrennt.")
 
-            # receive message from the server
-            response = client.recv(1024)
-            response = response.decode("utf-8")
+    def _send_message(self, message: dict):
+        if not self.socket:
+            raise ConnectionError("Keine aktive Verbindung zum Server.")
 
-            # if server sent us "closed" in the payload, we break out of
-            # the loop and close our socket
-            if response.lower() == "closed":
-                break
+        json_message = json.dumps(message)
+        self.socket.send(json_message.encode("utf-8")[:1024])
+        print(f"gesendet: {json_message}")
 
-            print(f"Received: {response}")
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        # close client socket (connection to the server)
-        client.close()
-        print("Connection to server closed")
-    print("Connection to server closed")
 
-if __name__ == "__main__":
-    run_client()
+    def _receive_message(self) -> dict:
+        if not self.socket:
+            raise ConnectionError("Keine aktive Verbindung zum Server.")
+        response = self.socket.recv(1024).decode("utf-8")
+        print(f"empfangen: {response}")
+        return json.loads(response)
+
+    def communicate_with_server(self, message):
+        self._send_message(message)
+        # TODO messaging anpassen
+        return self._receive_message()

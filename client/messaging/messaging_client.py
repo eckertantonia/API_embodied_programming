@@ -22,8 +22,8 @@ def create_initial_json_message():
         return hardcoded_message()
 
 
-def continuing_message():
-        message = input("Nachricht an Server (\"los\" oder \"stopp\" oder \"try\"): ").strip()
+def continuing_message(message):
+        # message = input("Nachricht an Server (\"los\" oder \"stopp\" oder \"try\"): ").strip()
 
         if not message:
                 print("Eingabe war leer")
