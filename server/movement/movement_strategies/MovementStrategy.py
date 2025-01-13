@@ -1,9 +1,15 @@
-from abc import ABC, abstractmethod
+import abc
+from abc import abstractmethod
+
+from server.bolt_group import BoltGroup
 
 
-class MovementStrategy(ABC):
+class MovementStrategy(metaclass=abc.ABCMeta):
+
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return callable(subclass.drive)
 
     @abstractmethod
-    async def drive(self, robots, points, offset=0):
-        #TODO: brauch ich offset wenn ich robots uebergebe?
-        return
+    def drive(self, robots: BoltGroup, points: []):
+        raise NotImplementedError
