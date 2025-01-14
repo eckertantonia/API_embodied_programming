@@ -26,8 +26,9 @@ def _get_strategy_instance(strategy):
 class Choreography:
     def __init__(self):
         self.bolt_group = BoltGroup()
+        self.ledcontrol = LEDControl()
 
-    def start_choreography(self, robot_group: List[Bolt], choreography, strategy):
+    def start_choreography(self, robot_group: List[Bolt], choreography):
         """
         Initialer Start jeder Choreographie.
 
@@ -48,13 +49,13 @@ class Choreography:
         elif choreography == "mix":
             mix = MixChoreo()
 
-            mix.start_choreo(self.bolt_group, _get_strategy_instance(strategy))
+            mix.start_choreo(self.bolt_group)
 
         elif choreography == "color":
-            ledcontrol = LEDControl()
-            ledcontrol.show_grouping(self.bolt_group[0])
+            self.ledcontrol.show_grouping(self.bolt_group[0])
 
     def create_bolt_group(self, bolt_group):
 
-        for bolt in bolt_group:
+        for i, bolt in enumerate(bolt_group):
             self.bolt_group.assign_bolt(bolt)
+            self.ledcontrol.show_character(bolt, bolt.value)

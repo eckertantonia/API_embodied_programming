@@ -1,5 +1,6 @@
 import json
 import socket
+from json import JSONDecodeError
 
 import client.messaging.messaging_service as messaging
 
@@ -18,6 +19,7 @@ class WebsocketClient:
         print(f"Verbunden mit Server.")
 
     def disconnect_from_server(self):
+        self._send_message(messaging.disconnect_message())
         if self.socket:
             self.socket.close()
             self.socket = None
@@ -34,9 +36,13 @@ class WebsocketClient:
     def _receive_message(self) -> dict:
         if not self.socket:
             raise ConnectionError("Keine aktive Verbindung zum Server.")
-        response = self.socket.recv(1024).decode("utf-8")
-        print(f"empfangen: {response}")
-        return json.loads(response)
+        try:
+            response = (self.socket.recv(1024))
+            decoded_response = response.decode("utf-8")
+            print(f"empfangen: {decoded_response}")
+            return json.loads(decoded_response)
+        except JSONDecodeError as e:
+            print(f"JSONDecodeError caused by response: {response}")
 
     def communicate_with_server(self, message):
         self._send_message(message)

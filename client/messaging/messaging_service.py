@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-robots = ["SB-8EA0", "SB-51FA", "SB-231B", "SB-3DAB", "SB-025F"]
+robots = ["SB-B98E", "SB-B09C", "SB-0A22", "SB-51FA", "SB-3AE1"]
 
 
 def hardcoded_message():
@@ -39,6 +39,7 @@ def continuing_message(message):
             "robots": "",
             "choreography": "",
             "strategy": "",
+            "values": "",
             "message": message
         }
 
@@ -49,11 +50,15 @@ def select_choreography_message(choreography, values):
     if len(values) > len(robots):
         raise
     choreo_robots = random.sample(robots, len(values))
+
+    value_string= []
+    for value in values:
+        value_string.append(str(value))
     data = {
         "robots": choreo_robots,
         "choreography": choreography,
         "strategy": "",
-        "values": values,
+        "values": value_string,
         "message": ""
     }
 
@@ -61,9 +66,22 @@ def select_choreography_message(choreography, values):
 
 
 def decode_message(message):
-    data = json.loads(message)
+    if isinstance(message, dict):
+        data = message  # Direkt verwenden, wenn es bereits ein Dictionary ist
+    else:
+        data = json.loads(message)
     message = data["message"]
     return message
+
+def disconnect_message():
+    data = {
+        "robots": "",
+        "choreography": "",
+        "strategy": "",
+        "values": "",
+        "message": "stopp"
+    }
+    return json.dumps(data)
 
 
 class NotEnoughRobotsForValuesException(Exception):

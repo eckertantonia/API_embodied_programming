@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
 
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
@@ -24,7 +25,7 @@ class RequestStrategy(MovementStrategy):
         Fuehrt die RequestStrategy aus, indem die Positionen fuer einen auffordernden Bolt und einen folgenden Bolt berechnet und anschliessend bewegt werden.
 
         :param robots: BoltGroup mit 2 Elementen. Erstes Element ist Aufforderer, zweites Element ist Folgender.
-        :param points: int-Tupel mit Ziel-Positionen der 2 Elemente aus robots
+        :param points: int-Tupel, leer lassen
         :raises Exception
         """
 
@@ -33,7 +34,7 @@ class RequestStrategy(MovementStrategy):
             return
 
         self.requester = robots[0]
-        self.follower = robots[2]
+        self.follower = robots[1]
 
         try:
             self._calculate_points()
@@ -41,8 +42,10 @@ class RequestStrategy(MovementStrategy):
             # part 1
             basic_moves.drive_hermite_curve(self.requester, self.requester_part_1)
 
-            # part 2 und part 3
+            # part 2
             self._execute_threads(basic_moves.drive_hermite_curve)
+
+            # part 3
 
         except Exception as e:
             logger.exception(f"Exception in InLineXStrategy: {e}")
@@ -73,7 +76,7 @@ class RequestStrategy(MovementStrategy):
         diff_point_1_2 = xr - xf
         drive_len = diff_point_1_2 / 4
 
-        p_5 = (xr + drive_len, yr)
+        p_5 = (xr - drive_len, yr)
         p_6 = (xr, yr)
         self.requester_part_3 = [p_4, p_5, p_6]
 
@@ -81,10 +84,11 @@ class RequestStrategy(MovementStrategy):
 
         pf_0 = (xf, yf)
         pf_1 = (xf, yr)
-        pf_2 = (xf - drive_len, yr)
+        pf_2 = (xf + drive_len, yr)
         pf_3 = (xf, yr)
 
-        self.follower_part_2 = [pf_0, pf_1, pf_2, pf_3]
+        self.follower_part_2 = [pf_0, pf_1]
+        self.follower_part_3 = [pf_1, pf_2, pf_3]
 
     def _execute_threads(self, target_method):
         """
@@ -121,6 +125,7 @@ class RequestStrategy(MovementStrategy):
             threads_part_3.append(thread_f)
 
             thread_r.start()
+            time.sleep(0.5)
             thread_f.start()
 
         except Exception as e:

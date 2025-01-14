@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class CompareNoChangeStrategy(MovementStrategy):
     def __init__(self):
-        self.points = []
+        # self.points = []
         self.robot_1: Bolt = None
         self.robot_2: Bolt = None
         self.robot_1_coords = []
@@ -25,10 +25,11 @@ class CompareNoChangeStrategy(MovementStrategy):
         :param points: int-Tupel, Ziel-Koordinaten der Elemente aus robots in Reihenfolge der Elemente
         :raises Exception
         """
-        self.points = points
+        # self.points = points
 
         sorted_robots = sorted(robots, key=lambda r: r.position[0])
         self.robot_1, self.robot_2 = sorted_robots
+        self._calculate_points()
 
         try:
             self._execute_threads(robots, basic_moves.drive_hermite_curve)
@@ -42,12 +43,12 @@ class CompareNoChangeStrategy(MovementStrategy):
         # robot 1
         x1, y1 = self.robot_1.position
         p1_0 = (x1, y1)
-        p1_1 = (x1, y1-1)
-        p1_2 = (x1-1, y1-1.5)
-        p1_3 = (x1-2, y1-1)
-        p1_4 = (x1-2, y1+1)
-        p1_5 = (x1-1, y1+1.5)
-        p1_6 = (x1, y1+1)
+        p1_1 = (x1, y1-0.5)
+        p1_2 = (x1-0.5, y1-0.75)
+        p1_3 = (x1-1, y1-0.5)
+        p1_4 = (x1-1, y1+0.5)
+        p1_5 = (x1-0.5, y1+0.75)
+        p1_6 = (x1, y1+0.5)
         p1_7 = (x1, y1)
 
         self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5, p1_6, p1_7]
@@ -55,12 +56,12 @@ class CompareNoChangeStrategy(MovementStrategy):
         # robot 2
         x2, y2 = self.robot_1.position
         p2_0 = (x2, y2)
-        p2_1 = (x2, y2 - 1)
-        p2_2 = (x2 + 1, y2 - 1.5)
-        p2_3 = (x2 + 2, y2 - 1)
-        p2_4 = (x2 + 2, y2 + 1)
-        p2_5 = (x2 + 1, y2 + 1.5)
-        p2_6 = (x2, y2 + 1)
+        p2_1 = (x2, y2 - 0.5)
+        p2_2 = (x2 + 0.5, y2 - 0.75)
+        p2_3 = (x2 + 1, y2 - 0.5)
+        p2_4 = (x2 + 1, y2 + 0.5)
+        p2_5 = (x2 + 0.5, y2 + 0.75)
+        p2_6 = (x2, y2 + 0.5)
         p2_7 = (x2, y2)
 
         self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3,p2_4, p2_5, p2_6, p2_7]

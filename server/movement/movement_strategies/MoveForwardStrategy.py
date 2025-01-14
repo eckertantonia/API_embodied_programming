@@ -20,7 +20,12 @@ class MoveForwardStrategy(MovementStrategy):
         :param points: int-Tupel, Ziel-Koordinaten der Elemente aus robots in Reihenfolge der Elemente
         :raises Exception
         """
+        if len(robots) != len(points):
+            logger.exception(f"Exception in MoveForwardStrategy: len(robots) != len(points): {len(robots)} != {len(points)}")
+            return
+
         self.points = points
+
         try:
             self._execute_threads(robots, basic_moves.drive_hermite_curve)
 
@@ -42,7 +47,7 @@ class MoveForwardStrategy(MovementStrategy):
         for i, robot in enumerate(robots):
             try:
 
-                thread = threading.Thread(target=target_method, args=(robot, self.points[i]))
+                thread = threading.Thread(target=target_method, args=(robot, [robot.position, self.points[i]]))
                 threads.append(thread)
 
                 robot.update_position(self.points[i])
@@ -50,7 +55,7 @@ class MoveForwardStrategy(MovementStrategy):
                 thread.start()
 
             except Exception as e:
-                logger.exception(f"InLineXStrategy: Error in threads for robot {robot.name}: {e}")
+                logger.exception(f"MoveForwardStrategy: Error in threads for robot {robot.name}: {e}")
 
         for thread in threads:
             thread.join()

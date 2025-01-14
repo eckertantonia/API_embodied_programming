@@ -5,8 +5,8 @@ class Controller:
     def __init__(self):
         self.manager = None
 
-    def control_initial_connect(self, robots, choreography, strategy):
-        self.manager = Manager(choreography, strategy)
+    def control_initial_connect(self, robots, choreography, values):
+        self.manager = Manager(choreography, values)
 
         position_string = self.manager.connect_bolts(robots)
 

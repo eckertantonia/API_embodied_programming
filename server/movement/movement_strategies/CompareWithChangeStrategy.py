@@ -9,7 +9,7 @@ from server.movement.movement_strategies.MovementStrategy import MovementStrateg
 logger = logging.getLogger(__name__)
 
 
-class CompareNoChangeStrategy(MovementStrategy):
+class CompareWithChangeStrategy(MovementStrategy):
     def __init__(self):
         self.points = []
         self.robot_1: Bolt = None
@@ -43,47 +43,36 @@ class CompareNoChangeStrategy(MovementStrategy):
         final_pos_robot_1 = self.robot_2.position
         final_pos_robot_2 = self.robot_1.position
 
-        # robot 1
         x1, y1 = self.robot_1.position
-        p1_0 = (x1, y1)
-        p1_1 = (x1, y1 + 1)
-        p1_2 = (x1 + 1, y1 + 2)
-        p1_3 = (x1 + 2, y1 + 2)
-        p1_4 = (x1 + 3, y1 + 1)
-        p1_5 = (x1 + 3, y1 - 1)
-        p1_6 = (x1 + 2, y1 - 2)
-        p1_7 = (x1 + 1, y1 - 2)
-        p1_8 = (x1, y1 - 1)
-        p1_9 = (x1, y1)
-        p1_10 = (x1, y1 + 1)
-        p1_11 = (x1 + 0.5, y1 + 2)
-        p1_12 = (x1 + 1.5, y1 + 2)
-        p1_13 = (x1 + 2, y1 + 1)
-        p1_14 = final_pos_robot_1
+        x2, y2 = self.robot_2.position
 
-        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5, p1_6, p1_7, p1_8, p1_9, p1_10, p1_11, p1_12, p1_13,
-                               p1_14]
+        distance_x1_x2 = abs(x2 -x1)
+
+        # robot 1
+
+        p1_0 = (x1, y1)
+        p1_1 = (x1, y1+1)
+        p1_2 = (x1+distance_x1_x2, y1+1)
+        p1_3 = (x1+distance_x1_x2, y1-1)
+        p1_4 = (x1, y1-1)
+        p1_5 = p1_1
+        p1_6 = p1_2
+        p1_7 = final_pos_robot_1
+
+        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5, p1_6, p1_7]
 
         # robot 2
-        x2, y2 = self.robot_1.position
+
         p2_0 = (x2, y2)
         p2_1 = (x2, y2 - 1)
-        p2_2 = (x2 - 1, y2 - 2)
-        p2_3 = (x2 - 2, y2 - 2)
-        p2_4 = (x2 - 3, y2 - 1)
-        p2_5 = (x2 - 3, y2 + 1)
-        p2_6 = (x2 - 2, y2 + 2)
-        p2_7 = (x2 - 1, y2 + 2)
-        p2_8 = (x2, y2 + 1)
-        p2_9 = (x2, y2)
-        p2_10 = (x2, y2 - 1)
-        p2_11 = (x2 - 0.5, y2 - 2)
-        p2_12 = (x2 - 1.5, y2 - 2)
-        p2_13 = (x2 - 2, y2 - 1)
-        p2_14 = final_pos_robot_2
+        p2_2 = (x2 - distance_x1_x2, y2 -1)
+        p2_3 = (x2 - distance_x1_x2, y2 + 1)
+        p2_4 = (x2, y2 + 1)
+        p2_5 = p2_1
+        p2_6 = p2_2
+        p2_7 = final_pos_robot_2
 
-        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3, p2_4, p2_5, p2_6, p2_7, p2_8, p2_9, p2_10, p2_11, p2_12, p2_13,
-                               p2_14]
+        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3, p2_4, p2_5, p2_6, p2_7]
 
     def _execute_threads(self, robots, target_method):
         """

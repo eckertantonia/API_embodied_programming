@@ -69,7 +69,7 @@ class CirclingStrategy(MovementStrategy, ABC):
             x, y = robot.position
             points = [(x, y), (x + 1, y + 1), (x + 2, y), (x + 1, y - 1), (x, y)]
 
-            basic_moves.drive_hermite_curve(robot.toy_api, points, compass_offset=robot.offset)
+            basic_moves.drive_hermite_curve(robot.toy_api, points)
             robot.update_position(points[-1])
         except RuntimeError as e:
             print(f"{e}")
@@ -79,7 +79,7 @@ class CirclingStrategy(MovementStrategy, ABC):
             # robot.toy_api.set_matrix_character("1", color=Color(r=100, g=0, b=100))
             x, y = robot.position
             points = [(x, y), (x - 1, y - 1), (x - 2, y), (x - 1, y + 1), (x, y)]
-            basic_moves.drive_hermite_curve(robot.toy_api, points, compass_offset=robot.offset)
+            basic_moves.drive_hermite_curve(robot.toy_api, points)
             robot.update_position(points[-1])
         except RuntimeError as e:
             print(f"{e}")

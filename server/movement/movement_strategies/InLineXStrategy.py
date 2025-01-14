@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class InLineXStrategy(MovementStrategy):
     def __init__(self):
-        self.x_coord = 0
+        self.x_line = 0
         self.points = []
 
     def drive(self, robots: BoltGroup, points: []):
@@ -22,7 +22,7 @@ class InLineXStrategy(MovementStrategy):
         :raises Exception
         """
 
-        self.x_coord = points[0]
+        self.x_line = points[0][0]
         try:
             self._calculate_points(robots)
 
@@ -41,11 +41,15 @@ class InLineXStrategy(MovementStrategy):
         """
 
         for robot in robots:
+            print(f"{robot.name}")
+            print(f"{robot.value}")
 
-            new_pos = (self.x_coord, robot.position[1])
+            new_pos = (robot.position[0], self.x_line)
+            print(f"new_pos {new_pos}")
 
-            while new_pos in self.points:
-                new_pos = (self.x_coord, robot.position[1] + 1)
+            if new_pos in self.points:
+                new_pos = (self.points[-1][0] +1, self.x_line)
+                print(f"new_pos {new_pos}")
 
             self.points.append(new_pos)
 
@@ -63,7 +67,7 @@ class InLineXStrategy(MovementStrategy):
         for i, robot in enumerate(robots):
             try:
 
-                thread = threading.Thread(target=target_method, args=(robot, self.points[i]))
+                thread = threading.Thread(target=target_method, args=(robot, [robot.position, self.points[i]]))
                 threads.append(thread)
 
                 robot.update_position(self.points[i])

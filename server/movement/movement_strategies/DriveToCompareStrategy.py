@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class DriveToCompareStrategy(MovementStrategy):
     def __init__(self):
-        self.points = []
+        # self.points = []
         self.robot_1: Bolt = None
         self.robot_2: Bolt = None
         self.robot_1_coords = []
@@ -25,10 +25,12 @@ class DriveToCompareStrategy(MovementStrategy):
         :param points: int-Tupel, Ziel-Koordinaten der Elemente aus robots in Reihenfolge der Elemente
         :raises Exception
         """
-        self.points = points
+        # self.points = points
 
         sorted_robots = sorted(robots, key=lambda r: r.position[0])
         self.robot_1, self.robot_2 = sorted_robots
+
+        self._calculate_points()
 
         try:
             self._execute_threads(robots, basic_moves.drive_hermite_curve)

@@ -12,14 +12,14 @@ from server.led_control import LEDControl
 
 
 class Manager:
-    def __init__(self, choreography=None, strategy=None):
+    def __init__(self, choreography=None, values=[]):
         self.bolts: List[Bolt] = []
-        self.choreography = None
-        self.strategy = None
+        self.choreography = choreography
+        self.values = values
         self.led_control = LEDControl()
 
         # event um auf api verbindung zu warten
-        self.connection_event = asyncio.Event()
+        # self.connection_event = asyncio.Event()
         self.executor = ThreadPoolExecutor()
 
     def _check_robot_in_list(self, name) -> Bolt:
@@ -38,16 +38,24 @@ class Manager:
 
         :return:
         """
-        for i, bolt in enumerate(robots):
-            self._set_robot(bolt, i)
+        if len(robots) != len(self.values):
+            return f"Anzahl Robots und Anzahl Values passen nicht zusammen: robots:{len(robots)}, values: {len(self.values)}"
 
-        position_string = ""
-        for i in range(0, len(robots)):
-            position_string += f"{i}     "
+        try:
+            for i, bolt in enumerate(robots):
+                response = self._set_robot(bolt, i, self.values[i])
+                while "ToyNotFoundError" in response:
+                    response = self._set_robot(bolt, i, self.values[i])
 
-        return position_string
+            position_string = ""
+            for i in range(0, len(robots)):
+                position_string += f"{i}     "
 
-    def _set_robot(self, name: str, position):
+            return position_string
+        except ToyNotFoundError as e:
+            return "ToyNotFoundError"
+
+    def _set_robot(self, name: str, position, value):
 
         try:
             future = self.executor.submit(self._find_toy_blocking, name)
@@ -56,10 +64,13 @@ class Manager:
 
             bolt = Bolt(toy)
             bolt.position = (position, 0)
+            bolt.value = value
             self._open_api(bolt)
             self.bolts.append(bolt)
-        except ToyNotFoundError as e:
-            print(f"ToyNotFoundError for {name}")
+            return "ok"
+        except ToyNotFoundError:
+            return (f"ToyNotFoundError for {name}")
+
         except Exception as e:
             print(f"manager: toy {name} not found")
             raise
@@ -81,7 +92,7 @@ class Manager:
                 retries += 1
                 bolt.toy_api.__enter__()
                 self.led_control.show_string(bolt, "Hi")
-                self.led_control.show_grouping(bolt)
+                self.led_control.show_character(bolt, str(bolt.position[0]))
                 # Wenn erfolgreich, Schleife verlassen
                 print(f"{bolt.name} erfolgreich verbunden!")
                 break
@@ -113,11 +124,7 @@ class Manager:
 
     def start_choreo(self):
         """
-
-        :param robots: BoltGroup
-        :param choreography: string
-        :param strategy: string
         :return:
         """
         choreo = Choreography()
-        choreo.start_choreography(self.bolts, self.choreography, self.strategy)
+        choreo.start_choreography(self.bolts, self.choreography)
