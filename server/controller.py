@@ -1,4 +1,5 @@
 from manager import Manager
+from server.choreographies.BubbleSortChoreo import BubbleSortChoreo
 
 
 class Controller:

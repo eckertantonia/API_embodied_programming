@@ -1,4 +1,3 @@
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
@@ -8,7 +7,20 @@ from spherov2.scanner import ToyNotFoundError
 
 from bolt import Bolt
 from choreography import Choreography
+from server.choreographies.BubbleSortChoreo import BubbleSortChoreo
 from server.led_control import LEDControl
+
+CHOREOGRAPHIES = {
+    "bubblesort": BubbleSortChoreo
+}
+
+
+def _get_choreography_instance(choreography):
+    choreography_class = CHOREOGRAPHIES.get(choreography)
+    if choreography_class:
+        return choreography_class()
+    else:
+        return None
 
 
 class Manager:
@@ -44,7 +56,7 @@ class Manager:
         try:
             for i, bolt in enumerate(robots):
                 response = self._set_robot(bolt, i, self.values[i])
-                while "ToyNotFoundError" in response:
+                while "ToyNotFoundError" in response or "TimeOutError" in response:
                     response = self._set_robot(bolt, i, self.values[i])
 
             position_string = ""
@@ -70,6 +82,9 @@ class Manager:
             return "ok"
         except ToyNotFoundError:
             return (f"ToyNotFoundError for {name}")
+
+        except TimeoutError:
+            return (f"TimeOutError")
 
         except Exception as e:
             print(f"manager: toy {name} not found")
@@ -126,5 +141,10 @@ class Manager:
         """
         :return:
         """
-        choreo = Choreography()
-        choreo.start_choreography(self.bolts, self.choreography)
+        choreography = _get_choreography_instance(self.choreography)
+        if not choreography:
+            choreo = Choreography()
+            choreo.start_choreography(self.bolts, self.choreography)
+        else:
+            choreography.set_bolts_and_values(self.bolts, self.values)
+            choreography.start_choreo()

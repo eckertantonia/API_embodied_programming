@@ -9,6 +9,7 @@ class LEDControl:
     def __init__(self):
         self.main_color = Color(r=2, g=238, b=255)
         self.highlight_color = Color(r=255, g=0, b=0)
+        self.green = Color(r=0, g=255, b=0)
 
     def show_string(self, robot, string, color=None):
         if color is None:
@@ -20,7 +21,13 @@ class LEDControl:
 
     def show_character(self, robot, character, color = None):
         robot.toy_api.set_matrix_character(character, self.main_color)
-        pass
+
+
+    def highlight_character(self, robot, character, color = None):
+        robot.toy_api.set_matrix_character(character, self.highlight_color)
+
+    def green_character(self, robot, character, color = None):
+        robot.toy_api.set_matrix_character(character, self.green)
 
     def show_grouping(self, robot: Bolt, color = None):
         if color is None:

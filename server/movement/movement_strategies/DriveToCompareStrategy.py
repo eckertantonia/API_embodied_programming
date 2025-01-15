@@ -4,6 +4,7 @@ import threading
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
 from server.bolt_group import BoltGroup
+from server.led_control import LEDControl
 from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class DriveToCompareStrategy(MovementStrategy):
         sorted_robots = sorted(robots, key=lambda r: r.position[0])
         self.robot_1, self.robot_2 = sorted_robots
 
-        self._calculate_points()
+        self._calculate_simple_points()
 
         try:
             self._execute_threads(robots, basic_moves.drive_hermite_curve)
@@ -38,6 +39,24 @@ class DriveToCompareStrategy(MovementStrategy):
         except Exception as e:
             logger.exception(f"Exception in MoveForwardStrategy: {e}")
             raise
+
+    def _calculate_simple_points(self):
+
+        x_0, y_0 = self.robot_1.position
+        x_1, y_1 = self.robot_2.position
+
+        y_final = y_0 + 1
+        # robot 1
+        p1_0 = (x_0, y_0)
+        p1_1 = (x_0, y_final)
+
+        self.robot_1_coords = [p1_0, p1_1]
+
+        # robot 2
+        p2_0 = (x_1, y_1)
+        p2_1 = (x_1, y_final)
+
+        self.robot_2_coords = [p2_0, p2_1]
 
     def _calculate_points(self):
 
@@ -86,3 +105,4 @@ class DriveToCompareStrategy(MovementStrategy):
 
         for thread in threads_part_2:
             thread.join()
+

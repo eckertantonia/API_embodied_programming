@@ -4,6 +4,7 @@ import threading
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
 from server.bolt_group import BoltGroup
+from server.led_control import LEDControl
 from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ class CompareWithChangeStrategy(MovementStrategy):
         self.robot_2: Bolt = None
         self.robot_1_coords = []
         self.robot_2_coords = []
+        self.ledcontrol = LEDControl()
 
     def drive(self, robots: BoltGroup, points: []):
         """
@@ -31,12 +33,32 @@ class CompareWithChangeStrategy(MovementStrategy):
         self.robot_1, self.robot_2 = sorted_robots
 
         try:
-            self._calculate_points()
+            self._calculate_simple_points()
             self._execute_threads(robots, basic_moves.drive_hermite_curve)
 
         except Exception as e:
             logger.exception(f"Exception in MoveForwardStrategy: {e}")
             raise
+
+    def _calculate_simple_points(self):
+        final_pos_robot_1 = self.robot_2.position
+        final_pos_robot_2 = self.robot_1.position
+
+        x1, y1 = self.robot_1.position
+        x2, y2 = self.robot_2.position
+
+        p1_0 = (x1, y1)
+        p1_1 = (x1, y1 + 0.5)
+        p1_2 = (x2, y2 + 0.5)
+        p1_3 = (x2, y2)
+
+        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3]
+
+        p2_0 = (x2, y2)
+        p2_1 = (x1, y1)
+
+        self.robot_2_coords = [p2_0, p2_1]
+
 
     def _calculate_points(self):
 
@@ -97,5 +119,10 @@ class CompareWithChangeStrategy(MovementStrategy):
             for thread in threads_part_2:
                 thread.join()
 
+            self.ledcontrol.green_character(self.robot_1, self.robot_1.value)
+            self.ledcontrol.green_character(self.robot_2, self.robot_2.value)
+
         except Exception as e:
             logger.exception(f"RequestStrategy: Error in threads: {e}")
+
+

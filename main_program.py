@@ -7,11 +7,13 @@ if __name__ == "__main__":
     embodied_programming_api = ClientAPI()
     embodied_programming_api.client.connect_to_server()
 
-    embodied_programming_api.select_choreography("mix", [6,3,5,7,2])
+    choreo = "bubblesort"
+
+    embodied_programming_api.select_choreography(choreo, [6,3,5,7,2])
     print("sleep 20")
     time.sleep(20)
 
-    embodied_programming_api.start_choreography("mix")
+    embodied_programming_api.start_choreography(choreo)
 
     embodied_programming_api.client.disconnect_from_server()
 

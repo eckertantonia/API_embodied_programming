@@ -4,6 +4,7 @@ import threading
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
 from server.bolt_group import BoltGroup
+from server.led_control import LEDControl
 from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ class CompareNoChangeStrategy(MovementStrategy):
         self.robot_2: Bolt = None
         self.robot_1_coords = []
         self.robot_2_coords = []
+        self.ledcontrol = LEDControl()
 
     def drive(self, robots: BoltGroup, points: []):
         """
@@ -29,7 +31,7 @@ class CompareNoChangeStrategy(MovementStrategy):
 
         sorted_robots = sorted(robots, key=lambda r: r.position[0])
         self.robot_1, self.robot_2 = sorted_robots
-        self._calculate_points()
+        self._calculate_simple_points()
 
         try:
             self._execute_threads(robots, basic_moves.drive_hermite_curve)
@@ -38,33 +40,42 @@ class CompareNoChangeStrategy(MovementStrategy):
             logger.exception(f"Exception in MoveForwardStrategy: {e}")
             raise
 
+    def _calculate_simple_points(self):
+        x1, y1 = self.robot_1.position
+        p1_0 = (x1, y1)
+        p1_5 = (x1, y1)
+        self.robot_1_coords = [p1_0, p1_5]
+
+        x2, y2 = self.robot_1.position
+        p2_0 = (x2, y2)
+        p2_5 = (x2, y2)
+
+        self.robot_2_coords = [p2_0, p2_5]
+
+
     def _calculate_points(self):
 
         # robot 1
         x1, y1 = self.robot_1.position
         p1_0 = (x1, y1)
-        p1_1 = (x1, y1-0.5)
-        p1_2 = (x1-0.5, y1-0.75)
-        p1_3 = (x1-1, y1-0.5)
-        p1_4 = (x1-1, y1+0.5)
-        p1_5 = (x1-0.5, y1+0.75)
-        p1_6 = (x1, y1+0.5)
-        p1_7 = (x1, y1)
+        p1_1 = (x1, y1-1)
+        p1_2 = (x1-2, y1-1)
+        p1_3 = (x1-2, y1 +1)
+        p1_4 = (x1, y1+1)
+        p1_5 = (x1, y1)
 
-        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5, p1_6, p1_7]
+        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5]
 
         # robot 2
         x2, y2 = self.robot_1.position
         p2_0 = (x2, y2)
-        p2_1 = (x2, y2 - 0.5)
-        p2_2 = (x2 + 0.5, y2 - 0.75)
-        p2_3 = (x2 + 1, y2 - 0.5)
-        p2_4 = (x2 + 1, y2 + 0.5)
-        p2_5 = (x2 + 0.5, y2 + 0.75)
-        p2_6 = (x2, y2 + 0.5)
-        p2_7 = (x2, y2)
+        p2_1 = (x2, y2-1)
+        p2_2 = (x2+2, y2-1)
+        p2_3 = (x2+2, y2+1)
+        p2_4 = (x2, y2+1)
+        p2_5 = (x2, y2)
 
-        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3,p2_4, p2_5, p2_6, p2_7]
+        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3,p2_4, p2_5]
 
     def _execute_threads(self, robots, target_method):
         """
@@ -91,3 +102,6 @@ class CompareNoChangeStrategy(MovementStrategy):
 
         for thread in threads_part_2:
             thread.join()
+
+        self.ledcontrol.green_character(self.robot_1, self.robot_1.value)
+        self.ledcontrol.green_character(self.robot_2, self.robot_2.value)

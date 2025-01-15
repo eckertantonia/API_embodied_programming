@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-robots = ["SB-B98E", "SB-B09C", "SB-0A22", "SB-51FA", "SB-3AE1"]
+robots = ["SB-8EA0", "SB-3DAB", "SB-22E4", "SB-231B", "SB-025F"]
 
 
 def hardcoded_message():

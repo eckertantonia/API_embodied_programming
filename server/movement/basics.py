@@ -138,7 +138,7 @@ def calculate_commands(points, compass_offset):
 
 
 # Sphero Bolt fahren lassen
-def drive_hermite_curve(robot, points, speed=50, initial_heading=None):
+def drive_hermite_curve(robot, points, initial_heading=None):
     """
     Fährt eine Hermite-Kurve mit dem Roboter.
 
@@ -159,14 +159,14 @@ def drive_hermite_curve(robot, points, speed=50, initial_heading=None):
         # commands = calculate_commands(spline, compass_offset=compass_offset)
         commands = calculate_commands(points, compass_offset=robot.offset)
 
-        _basic_drive(robot.toy_api, commands, speed)
+        _basic_drive(robot.toy_api, commands)
         robot.update_position(points[-1])
     except Exception as e:
         print(f"Exception in drive_hermite_curve: {e}")
         raise
 
 
-def _basic_drive(robot_api, commands, speed=70):
+def _basic_drive(robot_api, commands, speed=50):
     """
     TODO: speed 50 ist ein bisschen sehr gemaechlich
     holt Schwung und bremst ab
@@ -192,21 +192,13 @@ def _basic_drive(robot_api, commands, speed=70):
     robot_api.roll(first_angle, 0, 1)
     start_distance = robot_api.get_distance()
 
-    # Starte das Fahren mit den Commands
-    # thread = threading.Thread(target=control_distance, args=(robot, commands, calculated_distance, speed, start_distance))
-    # thread.start()
-    # thread.join()
     control_distance(robot_api, commands, speed)
-
-    print(f"berechnete Distanz: {calculated_distance}")
-    print(f"Gesamtdistanz {robot_api.get_distance() - start_distance}")
 
 
 def control_distance(robot, commands, speed):
     """
     Kontrolliert den Roboter basierend auf den Befehlen und passt das Heading an.
     """
-    # approximieren über zeit v(t) = x(t) - x(t-1)/ dt
 
     for distance, angle in commands:
         time.sleep(0.5)
@@ -217,17 +209,13 @@ def control_distance(robot, commands, speed):
         robot.set_speed(speed)
         while cur_distance < distance - 4:
             cur_distance = robot.get_distance() - start_distance  # robot faehrt bis distance erreicht
-            print(f"Aktuelle Distanz: {cur_distance} / Ziel: {distance} / heading: {robot.get_heading()}")
-            print(f"geschwindigkeit: {robot.get_velocity()}")
             time.sleep(0.01)
 
         robot.set_speed(0)
         stop_distance = robot.get_distance() - start_distance
-        print(f"distanz nach stopp: {stop_distance}")
         # Start fuer naechsten Abschnitt
 
     robot.set_speed(0)  # Anhalten, wenn alle Kommandos abgearbeitet sind
-    print("Alle Befehle ausgeführt.")
 
 
 def plotSpline(points, initial_heading):
