@@ -1,15 +1,32 @@
 from manager import Manager
-from server.choreographies.BubbleSortChoreo import BubbleSortChoreo
 
 
 class Controller:
     def __init__(self):
-        self.manager = None
+        self.manager = Manager()
+        self.initial_connect = False
 
-    def control_initial_connect(self, robots, choreography, values):
-        self.manager = Manager(choreography, values)
+    def process_command(self, payload):
+        choreography = payload.get("choreography")
+        values = payload.get("values", [])
+        message = payload.get("message", "")
 
-        position_string = self.manager.connect_bolts(robots)
+        if not self.initial_connect:
+            self.control_initial_connect(choreography, values)
+            self.initial_connect = True
+
+        if values and message:
+            self.control_start(values, message)
+
+        if message == "stopp":
+            return self.control_disconnect()
+        else:
+            return "Unknown command"
+
+    def control_initial_connect(self, choreography, values):
+        self.manager.choreography = choreography
+        self.manager.values = values
+        position_string = self.manager.connect_bolts()
 
         return f"Ordne die Roboter in folgender Reihenfolge an: \n" + position_string
 
@@ -17,8 +34,5 @@ class Controller:
         self.manager.close_api()
         return "Apis closed."
 
-    def control_choreography(self):
-        self.manager.start_choreo()
-
-    def control_connected(self):
-        pass
+    def control_start(self, values, message):
+        self.manager.start(values, message)

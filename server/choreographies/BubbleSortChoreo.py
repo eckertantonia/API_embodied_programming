@@ -1,4 +1,5 @@
 from server.bolt_group import BoltGroup
+from server.choreographies.ChoreographyInterface import ChoreographyInterface
 from server.led_control import LEDControl
 from server.movement.movement_strategies.CompareNoChangeStrategy import CompareNoChangeStrategy
 from server.movement.movement_strategies.CompareWithChangeStrategy import CompareWithChangeStrategy
@@ -6,7 +7,7 @@ from server.movement.movement_strategies.DriveToCompareStrategy import DriveToCo
 from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 
 
-class BubbleSortChoreo:
+class BubbleSortChoreo(ChoreographyInterface):
     def __init__(self):
         self.bolt_group = None
         self.values = None
@@ -21,7 +22,12 @@ class BubbleSortChoreo:
             bolt.calibrate()
             self.ledcontrol.show_character(bolt, bolt.value)
 
-    def start_choreo(self):
+    def start_choreo(self, robot_group, values):
+        self.set_bolts_and_values(robot_group, values)
+
+        self.bubblesort_choreo()
+
+    def bubblesort_choreo(self):
         # algorithmus
 
         n = len(self.values)
@@ -49,8 +55,6 @@ class BubbleSortChoreo:
             if not swapped:
                 break
 
-        pass
-
     def compare_robots(self):
         # nach vorne fahren -> drive to compare
         for bolt in self.compare_group:
@@ -64,6 +68,9 @@ class BubbleSortChoreo:
         compare_with_change = CompareWithChangeStrategy()
         compare_with_change.drive(self.compare_group, [])
 
+        for bolt in self.compare_group:
+            self.ledcontrol.show_character(bolt, bolt.value)
+
         # zurück fahren
         move_back = MoveForwardStrategy()
         move_back.drive(self.compare_group, end_points)
@@ -75,6 +82,8 @@ class BubbleSortChoreo:
         # compare no change
         compare_no_change = CompareNoChangeStrategy()
         compare_no_change.drive(self.compare_group, [])
+        for bolt in self.compare_group:
+            self.ledcontrol.green_character(bolt, bolt.value)
 
         # zurück fahren
         move_back = MoveForwardStrategy()

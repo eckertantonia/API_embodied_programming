@@ -17,7 +17,6 @@ class CompareNoChangeStrategy(MovementStrategy):
         self.robot_2: Bolt = None
         self.robot_1_coords = []
         self.robot_2_coords = []
-        self.ledcontrol = LEDControl()
 
     def drive(self, robots: BoltGroup, points: []):
         """
@@ -102,6 +101,3 @@ class CompareNoChangeStrategy(MovementStrategy):
 
         for thread in threads_part_2:
             thread.join()
-
-        self.ledcontrol.green_character(self.robot_1, self.robot_1.value)
-        self.ledcontrol.green_character(self.robot_2, self.robot_2.value)

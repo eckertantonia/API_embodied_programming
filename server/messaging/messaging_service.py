@@ -1,47 +1,76 @@
+from datetime import datetime
 import json
-
 from server.controller import Controller
 
-controller = Controller()
-def decode_message(json_data):
 
-    try:
-        # Erster Schritt: Entferne äußere Anführungszeichen und parse den String
-        data_as_string = json.loads(json_data)
+class MessagingService:
+    def __init__(self):
+        self.controller = Controller()
 
-        # Zweiter Schritt: Parse den inneren JSON-String
-        data = json.loads(data_as_string)
-    except json.JSONDecodeError as e:
-        print(f"JSONDecodeError: {e}")  # Fehler debuggen
-        return json.dumps({"error": "Invalid JSON format", "details": str(e)})
-    response = ""
+    def process_status_request(self,payload):
+        status_type = payload.get("status_type", "general")
 
-    choreography = data["choreography"]
-    robots = data["robots"]
-    strategy = data["strategy"]
-    values = data["values"]
-    message = data["message"]
-
-    if choreography:
-        response = controller.control_initial_connect(robots, choreography, values)
-
-    elif message == "startchoreo":
-        controller.control_choreography()
-
-    elif message == "los":
-        controller.control_connected()
-
-    elif message == "stopp":
-        controller.control_disconnect()
-
-    else:
-        controller.control_initial_connect(robots, choreography, strategy)
-
-    return code_response(response)
+        if status_type == "general":
+            # Allgemeine Informationen über das System
+            return {
+                "system_status": "online"
+            }
+        else:
+            # Unbekannte Statusanfrage
+            return {
+                "error": f"Unknown status_type: {status_type}"
+            }
 
 
-def code_response(response):
-    data = {
-        "message": response
-    }
-    return json.dumps(data)
+    def handle_client_message(self, json_message):
+        try:
+            # JSON parsen
+            data = json.loads(json_message)
+        except json.JSONDecodeError as e:
+            return self.create_error_response("Invalid JSON format", str(e))
+
+        # Nachrichtentyp und Payload extrahieren
+        msg_type = data.get("type")
+        payload = data.get("payload", {})
+        response = ""
+
+        # Logik basierend auf dem Typ der Nachricht
+        if msg_type == "command":
+            response = self.controller.process_command(payload)
+        elif msg_type == "status":
+            response = self.process_status_request(payload)
+        else:
+            return self.create_error_response("Unknown message type", f"Type: {msg_type}")
+
+        return self.create_response(response)
+
+
+    def create_response(self,response):
+        """
+        Erstellt eine Antwort-Nachricht.
+        """
+        return json.dumps({
+            "type": "response",
+            "payload": {
+                "message": response
+            },
+            "metadata": {
+                "timestamp": datetime.now()
+            }
+        })
+
+
+    def create_error_response(error_message, details):
+        """
+        Erstellt eine Fehlermeldung.
+        """
+        return json.dumps({
+            "type": "error",
+            "payload": {
+                "error": error_message,
+                "details": details
+            },
+            "metadata": {
+                "timestamp": datetime.now()
+            }
+        })

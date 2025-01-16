@@ -1,3 +1,4 @@
+import random
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
@@ -6,32 +7,19 @@ from spherov2 import scanner
 from spherov2.scanner import ToyNotFoundError
 
 from bolt import Bolt
-from choreography import Choreography
-from server.choreographies.BubbleSortChoreo import BubbleSortChoreo
+from server.choreographies.MainChoreography import MainChoreography
 from server.led_control import LEDControl
 
-CHOREOGRAPHIES = {
-    "bubblesort": BubbleSortChoreo
-}
-
-
-def _get_choreography_instance(choreography):
-    choreography_class = CHOREOGRAPHIES.get(choreography)
-    if choreography_class:
-        return choreography_class()
-    else:
-        return None
+sphero_bolt_names = ["SB-8EA0", "SB-3DAB", "SB-22E4", "SB-231B", "SB-025F"]
 
 
 class Manager:
-    def __init__(self, choreography=None, values=[]):
+    def __init__(self):
         self.bolts: List[Bolt] = []
-        self.choreography = choreography
-        self.values = values
+        self.choreography = MainChoreography()
+        self.values = None
         self.led_control = LEDControl()
 
-        # event um auf api verbindung zu warten
-        # self.connection_event = asyncio.Event()
         self.executor = ThreadPoolExecutor()
 
     def _check_robot_in_list(self, name) -> Bolt:
@@ -43,15 +31,12 @@ class Manager:
         """
         return next((bolt for bolt in self.bolts if bolt.name == name), None)
 
-    def connect_bolts(self, robots):
-        """
-        TODO: Fehlermanagement bei Verbindung
-        Creates task in running loop, calls correlating async function.
+    def connect_bolts(self):
 
-        :return:
-        """
-        if len(robots) != len(self.values):
-            return f"Anzahl Robots und Anzahl Values passen nicht zusammen: robots:{len(robots)}, values: {len(self.values)}"
+        try:
+            robots = random.sample(sphero_bolt_names, len(self.values))
+        except Exception:
+            raise NotEnoughRobotsForValuesException(self.values)
 
         try:
             for i, bolt in enumerate(robots):
@@ -78,7 +63,9 @@ class Manager:
             bolt.position = (position, 0)
             bolt.value = value
             self._open_api(bolt)
-            self.bolts.append(bolt)
+
+            self.bolts.append(bolt)  # fuer disconnect
+            self.choreography.bolt_group.assign_bolt(bolt)
             return "ok"
         except ToyNotFoundError:
             return (f"ToyNotFoundError for {name}")
@@ -128,23 +115,18 @@ class Manager:
                     raise
 
     def close_api(self):
-        """
-        Schließt die Verbindung zum Bolt-Roboter.
-
-        :param bolt: Bolt Instanz, die Verbindung zum Roboter hält
-        """
-
         for bolt in self.bolts:
             bolt.toy_api.__exit__(None, None, None)
 
-    def start_choreo(self):
-        """
-        :return:
-        """
-        choreography = _get_choreography_instance(self.choreography)
-        if not choreography:
-            choreo = Choreography()
-            choreo.start_choreography(self.bolts, self.choreography)
-        else:
-            choreography.set_bolts_and_values(self.bolts, self.values)
-            choreography.start_choreo()
+    def start(self, values, message):
+        self.choreography.start_choreography(values, message)
+
+
+class NotEnoughRobotsForValuesException(Exception):
+    def __init__(self, values):
+        self.len_values = len(values)
+        self.len_robots = len(sphero_bolt_names)
+        self.message = (f"NotEnoughRobotsForValuesException: "
+                        f"There are not enough robots for the amount of "
+                        f"values you chose. Amount Values: {self.len_values}, Amount Robots: {self.len_robots}.")
+        super().__init__(self.message)

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3.8
 
 import socket
-import threading
 
-import server.messaging.messaging_service as messaging
+from server.messaging.messaging_service import MessagingService
 
 
-def handle_client(client_socket, addr):
+def handle_client(client_socket, addr, messaging_service):
     try:
         while True:
             # receive and print client messages
@@ -17,7 +16,7 @@ def handle_client(client_socket, addr):
                 client_socket.send("closed".encode("utf-8"))
                 break
             else:
-                response = messaging.decode_message(request)
+                response = messaging_service.decode_message(request)
             print(f"Received: {request}")
 
             # convert and send accept response to the client
@@ -33,6 +32,7 @@ def handle_client(client_socket, addr):
 def run_server():
     server_ip = "127.0.0.1"
     port = 8765
+    messaging_service = MessagingService()
     # create a socket object
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # bind the socket to a specific address and port
@@ -50,7 +50,7 @@ def run_server():
         # threading um mehrere clients zu akzeptieren
         # thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
         # thread.start()
-        handle_client(client_socket, client_address)
+        handle_client(client_socket, client_address, messaging_service)
 
     except Exception as e:
         print(f"Error: {e}")

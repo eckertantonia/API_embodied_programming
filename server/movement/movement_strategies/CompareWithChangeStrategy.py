@@ -17,7 +17,6 @@ class CompareWithChangeStrategy(MovementStrategy):
         self.robot_2: Bolt = None
         self.robot_1_coords = []
         self.robot_2_coords = []
-        self.ledcontrol = LEDControl()
 
     def drive(self, robots: BoltGroup, points: []):
         """

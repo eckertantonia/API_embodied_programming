@@ -17,9 +17,12 @@ class ClientAPI:
     def disconnect_server(self):
         self.client.disconnect_from_server()
 
+    def start(self, values):
+        message = MessagingService.create_message(values=values)
+        print(self.client.communicate_with_server(message))
+
     def start_choreography(self):
-        """Choreographie starten."""
-        message = MessagingService.continuing_message("startchoreo")
+        message = MessagingService.create_message(message="startchoreo")
 
         response = self.client.communicate_with_server(message)
         while "ToyNotFoundError" in response:
@@ -29,14 +32,18 @@ class ClientAPI:
         return response
 
     def select_choreography(self, choreography, values):
-        message = MessagingService.select_choreography_message(choreography, values)
+        message = MessagingService.create_message(choreography=choreography, values=values)
 
         print(self.client.communicate_with_server(message))
         print("Stelle die Roboter jetzt richtig hin!")
         time.sleep(20)
 
-    def swap_positions(self):
-        pass
+    def swap_positions(self, values):
+        message = MessagingService.create_message(values=values, message="swap")
 
-    def dont_swap_positions(self):
-        pass
+        print(self.client.communicate_with_server(message))
+
+    def dont_swap_positions(self, values):
+        message = MessagingService.create_message(values=values, message="dont_swap")
+
+        print(self.client.communicate_with_server(message))

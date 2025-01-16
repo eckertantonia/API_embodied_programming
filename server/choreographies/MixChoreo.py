@@ -5,6 +5,7 @@ from spherov2.types import Color
 
 from server.bolt import Bolt
 from server.bolt_group import BoltGroup
+from server.choreographies.ChoreographyInterface import ChoreographyInterface
 from server.movement.movement_strategies.CompareNoChangeStrategy import CompareNoChangeStrategy
 from server.movement.movement_strategies.DriveToCompareStrategy import DriveToCompareStrategy
 from server.movement.movement_strategies.InLineXStrategy import InLineXStrategy
@@ -15,18 +16,18 @@ from server.movement.movement_strategies.RequestStrategy import RequestStrategy
 from server.movement.movement_strategies.CompareWithChangeStrategy import CompareWithChangeStrategy
 
 
-class MixChoreo:
+class MixChoreo(ChoreographyInterface):
     def __init__(self):
         self.move_forward_strategy = MoveForwardStrategy()
         self.in_line_strategy = InLineXStrategy()
         self.circle_group = BoltGroup()
         self.led_control = LEDControl()
 
-    def start_choreo(self, bolt_group):
+    def start_choreo(self, robot_group, values):
 
-        self.assign_start_pos(bolt_group)
-        self.circle_group.assign_bolt(bolt_group[0])
-        self.circle_group.assign_bolt(bolt_group[1])
+        self.assign_start_pos(robot_group)
+        self.circle_group.assign_bolt(robot_group[0])
+        self.circle_group.assign_bolt(robot_group[1])
 
         drive_to_compare = DriveToCompareStrategy()
         drive_to_compare.drive(self.circle_group, [])
@@ -35,18 +36,18 @@ class MixChoreo:
         compare_no_change.drive(self.circle_group, [])
 
         in_line_x = InLineXStrategy()
-        in_line_x.drive(bolt_group, [(0, 0)])
+        in_line_x.drive(robot_group, [(0, 0)])
 
         group_2 = BoltGroup()
-        group_2.assign_bolt(bolt_group[0])
-        target = [(bolt_group[0].position[0],bolt_group[0].position[1]+2)]
+        group_2.assign_bolt(robot_group[0])
+        target = [(robot_group[0].position[0], robot_group[0].position[1] + 2)]
 
         group_3 = BoltGroup()
-        group_3.assign_bolt(bolt_group[0])
-        group_3.assign_bolt(bolt_group[3])
+        group_3.assign_bolt(robot_group[0])
+        group_3.assign_bolt(robot_group[3])
 
-        start_1 = bolt_group[0].position
-        start_2 = bolt_group[3].position
+        start_1 = robot_group[0].position
+        start_2 = robot_group[3].position
 
         move_forward = MoveForwardStrategy()
         move_forward.drive(group_2, target)

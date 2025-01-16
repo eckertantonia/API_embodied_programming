@@ -1,94 +1,50 @@
 import json
 import os
 import random
+from datetime import datetime
 
-robots = ["SB-8EA0", "SB-3DAB", "SB-22E4", "SB-231B", "SB-025F"]
+
+def create_json_message(msg_type, payload):
+    return json.dumps({
+        "type": msg_type,
+        "payload": payload,
+        "metadata": {
+            "timestamp": datetime.now(),
+            "request_id": generate_request_id()
+        }
+    })
 
 
-def hardcoded_message():
-    # datei laden als zwischenlösung bis json gebaut wird
+def generate_request_id():
+    return f"{random.randint(100000, 999999)}"
+
+
+def create_hardcoded_message():
     exampleFilePath = os.path.join(os.path.dirname(__file__), "exampleMessage.json")
     with open(exampleFilePath, 'r', encoding='utf-8') as file:
         json_data = json.load(file)
-
-        json_string = json.dumps(json_data)
-
-        return json_string
+    return create_json_message("command", json_data)
 
 
-def create_initial_json_message():
-    """
-    Nimmt Konsolen-Input und kodiert diesen als json-Nachricht.
-    Wenn kein Input gegeben wurde, wird eine Default-Nachricht zurückgegeben.
-    :return:
-    """
-
-    return hardcoded_message()
-
-
-def continuing_message(message):
-    # message = input("Nachricht an Server (\"los\" oder \"stopp\" oder \"try\"): ").strip()
-
-    if not message:
-        print("Eingabe war leer")
-        return None
-    elif message == "try":
-        return hardcoded_message()
-    else:
-        data = {
-            "robots": "",
-            "choreography": "",
-            "strategy": "",
-            "values": "",
-            "message": message
-        }
-
-        return json.dumps(data)
-
-
-def select_choreography_message(choreography, values):
-    if len(values) > len(robots):
-        raise
-    choreo_robots = random.sample(robots, len(values))
-
-    value_string= []
-    for value in values:
-        value_string.append(str(value))
-    data = {
-        "robots": choreo_robots,
+def create_message(choreography="", values=[], message=""):
+    payload = {
         "choreography": choreography,
-        "strategy": "",
-        "values": value_string,
-        "message": ""
+        "values": values,
+        "message": message
     }
+    return create_json_message("command", payload)
 
-    return json.dumps(data)
 
-
-def decode_message(message):
-    if isinstance(message, dict):
-        data = message  # Direkt verwenden, wenn es bereits ein Dictionary ist
-    else:
-        data = json.loads(message)
-    message = data["message"]
-    return message
-
-def disconnect_message():
-    data = {
-        "robots": "",
+def create_disconnect_message():
+    payload = {
+        "robots": [],
         "choreography": "",
-        "strategy": "",
-        "values": "",
+        "values": [],
         "message": "stopp"
     }
-    return json.dumps(data)
+    return create_json_message("command", payload)
 
 
-class NotEnoughRobotsForValuesException(Exception):
-    def __init__(self, values):
-        self.len_values = len(values)
-        self.len_robots = len(robots)
-        self.message = (f"NotEnoughRobotsForValuesException: "
-                        f"There are not enough robots for the amount of "
-                        f"values you chose. Amount Values: {self.len_values}, Amount Robots: {self.len_robots}.")
-        super().__init__(self.message)
+def decode_message(json_message):
+    data = json.loads(json_message)
+    return data.get("payload", {}).get("message", "")
