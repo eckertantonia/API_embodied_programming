@@ -6,10 +6,19 @@ from server.bolt import Bolt
 
 
 class LEDControl:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:  # Wenn keine Instanz existiert, erstelle sie
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self):
-        self.main_color = Color(r=2, g=238, b=255)
-        self.highlight_color = Color(r=255, g=0, b=0)
-        self.green = Color(r=0, g=255, b=0)
+        if not hasattr(self, "_initialized"): # nur einmal initialisieren
+            self.main_color = Color(r=2, g=238, b=255)
+            self.highlight_color = Color(r=255, g=0, b=0)
+            self.green = Color(r=0, g=255, b=0)
+            self._initialized = True  # Markiert als instanziiert
 
     def show_string(self, robot, string, color=None):
         if color is None:
