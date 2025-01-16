@@ -203,6 +203,7 @@ def control_distance(robot, commands, speed):
     for distance, angle in commands:
         time.sleep(0.5)
         robot.set_heading(angle)
+        print(f"{robot._SpheroEduAPI__toy.name}{angle}")
         time.sleep(0.5)
         start_distance = robot.get_distance()  # robot setzt heading
         cur_distance = 0

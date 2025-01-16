@@ -2,6 +2,8 @@ import time
 
 from client.api import ClientAPI
 
+# Nutzerin
+
 if __name__ == "__main__":
     # ab hier dann api ansprechen :)
     embodied_programming_api = ClientAPI()
@@ -9,11 +11,9 @@ if __name__ == "__main__":
 
     choreo = "bubblesort"
 
-    embodied_programming_api.select_choreography(choreo, [6,3,5,7,2])
-    print("sleep 20")
-    time.sleep(20)
+    embodied_programming_api.select_choreography(choreo, [3,6,2,5,7])
 
-    embodied_programming_api.start_choreography(choreo)
+    embodied_programming_api.start_choreography()
 
     embodied_programming_api.client.disconnect_from_server()
 
