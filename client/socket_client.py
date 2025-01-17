@@ -40,12 +40,12 @@ class WebsocketClient:
             raise ConnectionError("Keine aktive Verbindung zum Server.")
         try:
             response = (self.socket.recv(1024))
-            decoded_response = response.decode("utf-8")
-            print(f"empfangen: {decoded_response}")
-            return json.loads(decoded_response)
+            print(f"empfangen: {response}")
+            return response
         except JSONDecodeError as e:
             print(f"JSONDecodeError caused by response: {response}")
 
     def communicate_with_server(self, message):
         self._send_message(message)
-        return self.messaging.decode_message(self._receive_message())
+        response = self._receive_message()
+        return self.messaging.decode_message(response)

@@ -1,12 +1,12 @@
 import time
 
-from client.api_embodied_programming import ClientAPI
+from client.api_embodied_programming import EmbodiedProgrammingAPI
 
 # Nutzerin
 
 if __name__ == "__main__":
     # ab hier dann api ansprechen :)
-    embodied_programming_api = ClientAPI()
+    embodied_programming_api = EmbodiedProgrammingAPI()
     embodied_programming_api.client.connect_to_server()
 
     # mit choreo

@@ -10,21 +10,23 @@ class Controller:
         choreography = payload.get("choreography")
         values = payload.get("values", [])
         message = payload.get("message", "")
+        response = ""
 
         if not self.initial_connect:
-            self.control_initial_connect(choreography, values)
             self.initial_connect = True
+            response = self.control_initial_connect(values)
 
-        if values and message:
-            self.control_start(values, message)
+        elif message == "start":
+            response = self.control_start(values, choreography)
 
-        if message == "stopp":
+        elif message == "stopp":
             return self.control_disconnect()
         else:
             return "Unknown command"
 
-    def control_initial_connect(self, choreography, values):
-        self.manager.choreography = choreography
+        return response
+
+    def control_initial_connect(self, values):
         self.manager.values = values
         position_string = self.manager.connect_bolts()
 
@@ -34,5 +36,5 @@ class Controller:
         self.manager.close_api()
         return "Apis closed."
 
-    def control_start(self, values, message):
-        self.manager.start(values, message)
+    def control_start(self, values, choreography):
+        return self.manager.start(values, choreography)

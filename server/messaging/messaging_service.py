@@ -24,8 +24,7 @@ class MessagingService:
 
     def handle_client_message(self, json_message):
         try:
-            # JSON parsen
-            data = json.loads(json_message)
+            data = json.loads(json.loads(json_message))
         except json.JSONDecodeError as e:
             return self.create_error_response("Invalid JSON format", str(e))
 
@@ -53,9 +52,6 @@ class MessagingService:
             "type": "response",
             "payload": {
                 "message": response
-            },
-            "metadata": {
-                "timestamp": datetime.now()
             }
         })
 
@@ -69,8 +65,5 @@ class MessagingService:
             "payload": {
                 "error": error_message,
                 "details": details
-            },
-            "metadata": {
-                "timestamp": datetime.now()
             }
         })

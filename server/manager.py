@@ -68,6 +68,7 @@ class Manager:
             self.choreography.bolt_group.assign_bolt(bolt)
             return "ok"
         except ToyNotFoundError:
+            print("Toy not found")
             return (f"ToyNotFoundError for {name}")
 
         except TimeoutError:
@@ -118,8 +119,9 @@ class Manager:
         for bolt in self.bolts:
             bolt.toy_api.__exit__(None, None, None)
 
-    def start(self, values, message):
-        self.choreography.start_choreography(values, message)
+    def start(self, values, choreography):
+        self.choreography.start_choreography(values, choreography)
+        return "ok"
 
 
 class NotEnoughRobotsForValuesException(Exception):

@@ -23,7 +23,7 @@ class EmbodiedProgrammingAPI:
         print(self.client.communicate_with_server(message))
 
     def start_choreography(self):
-        message = self.messaging.create_message(message="startchoreo")
+        message = self.messaging.create_message(message="start")
 
         response = self.client.communicate_with_server(message)
         while "ToyNotFoundError" in response:
@@ -40,11 +40,11 @@ class EmbodiedProgrammingAPI:
         time.sleep(20)
 
     def swap_positions(self, values):
-        message = self.messaging.create_message(values=values, message="swap")
+        message = self.messaging.create_message(choreography="dont_swap", values=values)
 
         print(self.client.communicate_with_server(message))
 
     def dont_swap_positions(self, values):
-        message = self.messaging.create_message(values=values, message="dont_swap")
+        message = self.messaging.create_message( choreography="dont_swap", values=values)
 
         print(self.client.communicate_with_server(message))

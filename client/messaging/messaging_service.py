@@ -8,11 +8,7 @@ class MessagingService:
     def create_json_message(self, msg_type, payload):
         return json.dumps({
             "type": msg_type,
-            "payload": payload,
-            "metadata": {
-                "timestamp": datetime.now(),
-                "request_id": self.generate_request_id()
-            }
+            "payload": payload
         })
 
 

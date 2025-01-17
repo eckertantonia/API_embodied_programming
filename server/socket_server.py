@@ -9,18 +9,18 @@ def handle_client(client_socket, addr, messaging_service):
     try:
         while True:
             # receive and print client messages
-            request = client_socket.recv(1024).decode("utf-8")
+            request = client_socket.recv(1024)
             if not request:
                 continue
             elif request.lower() == "close":
-                client_socket.send("closed".encode("utf-8"))
+                client_socket.send("closed")
                 break
             else:
-                response = messaging_service.decode_message(request)
+                response = messaging_service.handle_client_message(request)
             print(f"Received: {request}")
 
             # convert and send accept response to the client
-            client_socket.send(response.encode("utf-8"))
+            client_socket.send(response.encode("utf-8")[:1024])
     except Exception as e:
         print(f"Error when handling client: {e}")
         raise

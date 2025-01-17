@@ -28,7 +28,7 @@ class MainChoreography:
         for bolt in robots:
             self.bolt_group.assign_bolt(bolt)
 
-    def start_choreography(self, values, message):
+    def start_choreography(self, values, choreography):
 
         # roboter zu values identifizieren
         robot_group = BoltGroup()
@@ -38,7 +38,7 @@ class MainChoreography:
             robot_group.assign_bolt(robot)
 
         # bewegungen zu message finden
-        _get_choreography_instance(message).start_choreo(robot_group, values)
+        _get_choreography_instance(choreography).start_choreo(robot_group, values)
 
     def get_robot_with_value(self, target_value):
 
