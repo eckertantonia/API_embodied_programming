@@ -1,15 +1,16 @@
 import time
 
-import client.messaging.messaging_service as MessagingService
-from client.client_test import WebsocketClient
+from client.messaging.messaging_service import MessagingService
+from client.socket_client import WebsocketClient
 
 
 # Datei mit Funktionen, die von der API angeboten werden.
 # Vorderste Schicht zur Nutzerin
 
-class ClientAPI:
+class EmbodiedProgrammingAPI:
     def __init__(self):
         self.client = WebsocketClient()
+        self.messaging = MessagingService()
 
     def connect_server(self):
         self.client.connect_to_server()
@@ -18,11 +19,11 @@ class ClientAPI:
         self.client.disconnect_from_server()
 
     def start(self, values):
-        message = MessagingService.create_message(values=values)
+        message = self.messaging.create_message(values=values)
         print(self.client.communicate_with_server(message))
 
     def start_choreography(self):
-        message = MessagingService.create_message(message="startchoreo")
+        message = self.messaging.create_message(message="startchoreo")
 
         response = self.client.communicate_with_server(message)
         while "ToyNotFoundError" in response:
@@ -32,18 +33,18 @@ class ClientAPI:
         return response
 
     def select_choreography(self, choreography, values):
-        message = MessagingService.create_message(choreography=choreography, values=values)
+        message = self.messaging.create_message(choreography=choreography, values=values)
 
         print(self.client.communicate_with_server(message))
         print("Stelle die Roboter jetzt richtig hin!")
         time.sleep(20)
 
     def swap_positions(self, values):
-        message = MessagingService.create_message(values=values, message="swap")
+        message = self.messaging.create_message(values=values, message="swap")
 
         print(self.client.communicate_with_server(message))
 
     def dont_swap_positions(self, values):
-        message = MessagingService.create_message(values=values, message="dont_swap")
+        message = self.messaging.create_message(values=values, message="dont_swap")
 
         print(self.client.communicate_with_server(message))

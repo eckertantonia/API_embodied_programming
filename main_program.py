@@ -1,6 +1,6 @@
 import time
 
-from client.api import ClientAPI
+from client.api_embodied_programming import ClientAPI
 
 # Nutzerin
 

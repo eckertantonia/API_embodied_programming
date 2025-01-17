@@ -1,7 +1,7 @@
 import abc
 from abc import abstractmethod
 
-from server.bolt_group import BoltGroup
+from server.boltgroup import BoltGroup
 
 
 class MovementStrategy(metaclass=abc.ABCMeta):

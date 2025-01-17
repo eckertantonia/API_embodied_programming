@@ -1,8 +1,8 @@
-from server.bolt_group import BoltGroup
+from server.boltgroup import BoltGroup
 from server.choreographies.BubbleSortChoreo import BubbleSortChoreo
 from server.choreographies.DontSwapChoreo import DontSwapChoreo
 from server.choreographies.SwapChoreo import SwapChoreo
-from server.led_control import LEDControl
+from server.ledcontrol import LEDControl
 
 CHOREOGRAPHIES = {
     "bubblesort": BubbleSortChoreo,

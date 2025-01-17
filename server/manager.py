@@ -8,7 +8,7 @@ from spherov2.scanner import ToyNotFoundError
 
 from bolt import Bolt
 from server.choreographies.MainChoreography import MainChoreography
-from server.led_control import LEDControl
+from server.ledcontrol import LEDControl
 
 sphero_bolt_names = ["SB-8EA0", "SB-3DAB", "SB-22E4", "SB-231B", "SB-025F"]
 

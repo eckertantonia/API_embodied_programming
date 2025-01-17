@@ -3,8 +3,8 @@ import threading
 
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
-from server.bolt_group import BoltGroup
-from server.led_control import LEDControl
+from server.boltgroup import BoltGroup
+from server.ledcontrol import LEDControl
 from server.movement.movement_strategies.MovementStrategy import MovementStrategy
 
 logger = logging.getLogger(__name__)

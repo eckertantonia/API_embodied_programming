@@ -3,6 +3,7 @@ import socket
 from json import JSONDecodeError
 
 import client.messaging.messaging_service as messaging
+from client.messaging.messaging_service import MessagingService
 
 
 class WebsocketClient:
@@ -10,6 +11,7 @@ class WebsocketClient:
         self.server_ip = "127.0.0.1"
         self.server_port = 8765
         self.socket = None
+        self.messaging = MessagingService()
 
     def connect_to_server(self):
 
@@ -18,8 +20,8 @@ class WebsocketClient:
 
         print(f"Verbunden mit Server.")
 
-    def disconnect_from_server(self):
-        self._send_message(messaging.disconnect_message())
+    def disconnect_from_server(self, message):
+        self._send_message(message)
         if self.socket:
             self.socket.close()
             self.socket = None
@@ -46,5 +48,4 @@ class WebsocketClient:
 
     def communicate_with_server(self, message):
         self._send_message(message)
-        # TODO messaging anpassen
-        return messaging.decode_message(self._receive_message())
+        return self.messaging.decode_message(self._receive_message())
