@@ -29,14 +29,14 @@ class LEDControl:
         time.sleep(5)
 
     def show_character(self, robot, character, color = None):
-        robot.toy_api.set_matrix_character(character, self.main_color)
+        robot.toy_api.set_matrix_character(str(character), self.main_color)
 
 
     def highlight_character(self, robot, character, color = None):
-        robot.toy_api.set_matrix_character(character, self.highlight_color)
+        robot.toy_api.set_matrix_character(str(character), self.highlight_color)
 
     def green_character(self, robot, character, color = None):
-        robot.toy_api.set_matrix_character(character, self.green)
+        robot.toy_api.set_matrix_character(str(character), self.green)
 
     def show_grouping(self, robot: Bolt, color = None):
         if color is None:

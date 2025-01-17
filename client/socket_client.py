@@ -20,8 +20,9 @@ class WebsocketClient:
 
         print(f"Verbunden mit Server.")
 
-    def disconnect_from_server(self, message):
-        self._send_message(message)
+    def disconnect_from_server(self):
+        disconnect_message = self.messaging.create_disconnect_message()
+        self._send_message(disconnect_message)
         if self.socket:
             self.socket.close()
             self.socket = None

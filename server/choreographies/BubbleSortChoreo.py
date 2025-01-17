@@ -10,42 +10,29 @@ from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardS
 class BubbleSortChoreo(ChoreographyInterface):
     def __init__(self):
         self.bolt_group = None
-        self.values = None
         self.compare_group = BoltGroup()
         self.ledcontrol = LEDControl()
 
-    def set_bolts_and_values(self, bolts: [], values: []):
-        self.bolt_group = BoltGroup(bolts)
-        self.values = values
-
-        for bolt in self.bolt_group:
-            bolt.calibrate()
-            self.ledcontrol.show_character(bolt, bolt.value)
-
     def start_choreo(self, robot_group, values):
-        self.set_bolts_and_values(robot_group, values)
-
-        self.bubblesort_choreo()
-
-    def bubblesort_choreo(self):
+        self.bolt_group = robot_group
         # algorithmus
 
-        n = len(self.values)
+        n = len(values)
         for i in range(n):
             swapped = False
             for j in range(n - i - 1):
-                print(f"{self.values[j]} {self.values[j + 1]} ")
+                print(f"{values[j]} {values[j + 1]} ")
                 # Gruppe erstellen von 2 Robotern mit den entsprechenden Values
-                self.compare_group.assign_bolt(self.get_robot_with_value(self.values[j]))
-                self.compare_group.assign_bolt(self.get_robot_with_value(self.values[j + 1]))
+                self.compare_group.assign_bolt(self.get_robot_with_value(values[j]))
+                self.compare_group.assign_bolt(self.get_robot_with_value(values[j + 1]))
                 # Roboter mit value j und j+1 bewegen
                 starting_points = [self.compare_group[1].position, self.compare_group[0].position]
                 self.compare_robots()
 
-                if self.values[j] > self.values[j + 1]:
+                if values[j] > values[j + 1]:
                     # Roboter tauschen Positionen
                     self.swap_robots(starting_points)
-                    self.values[j], self.values[j + 1] = self.values[j + 1], self.values[j]
+                    values[j], values[j + 1] = values[j + 1], values[j]
                     swapped = True
                 else:
                     # Roboter tauschen nicht

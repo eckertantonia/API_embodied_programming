@@ -1,6 +1,8 @@
 import logging
 import threading
 
+from spherov2.controls import PacketDecodingException
+
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
 from server.boltgroup import BoltGroup
@@ -17,6 +19,7 @@ class CompareWithChangeStrategy(MovementStrategy):
         self.robot_2: Bolt = None
         self.robot_1_coords = []
         self.robot_2_coords = []
+        self.ledcontrol = LEDControl()
 
     def drive(self, robots: BoltGroup, points: []):
         """
@@ -121,7 +124,11 @@ class CompareWithChangeStrategy(MovementStrategy):
             self.ledcontrol.green_character(self.robot_1, self.robot_1.value)
             self.ledcontrol.green_character(self.robot_2, self.robot_2.value)
 
+        except TimeoutError or PacketDecodingException as e:
+            logger.error("Error in Bleak Connection (BLE)")
+            raise e
         except Exception as e:
             logger.exception(f"RequestStrategy: Error in threads: {e}")
+
 
 

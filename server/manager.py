@@ -15,10 +15,11 @@ sphero_bolt_names = ["SB-8EA0", "SB-3DAB", "SB-22E4", "SB-231B", "SB-025F"]
 
 class Manager:
     def __init__(self):
-        self.bolts: List[Bolt] = []
-        self.choreography = MainChoreography()
+        self._bolts: List[Bolt] = []
+        self._main_choreo = MainChoreography()
+        self.choreo = None
         self.values = None
-        self.led_control = LEDControl()
+        self._led_control = LEDControl()
 
         self.executor = ThreadPoolExecutor()
 
@@ -29,7 +30,7 @@ class Manager:
         :param name: string
         :return: Bolt
         """
-        return next((bolt for bolt in self.bolts if bolt.name == name), None)
+        return next((bolt for bolt in self._bolts if bolt.name == name), None)
 
     def connect_bolts(self):
 
@@ -64,8 +65,8 @@ class Manager:
             bolt.value = value
             self._open_api(bolt)
 
-            self.bolts.append(bolt)  # fuer disconnect
-            self.choreography.bolt_group.assign_bolt(bolt)
+            self._bolts.append(bolt)  # fuer disconnect
+            self._main_choreo.bolt_group.assign_bolt(bolt)
             return "ok"
         except ToyNotFoundError:
             print("Toy not found")
@@ -94,8 +95,8 @@ class Manager:
             try:
                 retries += 1
                 bolt.toy_api.__enter__()
-                self.led_control.show_string(bolt, "Hi")
-                self.led_control.show_character(bolt, str(bolt.position[0]))
+                self._led_control.show_string(bolt, "Hi")
+                self._led_control.show_character(bolt, str(bolt.position[0]))
                 # Wenn erfolgreich, Schleife verlassen
                 print(f"{bolt.name} erfolgreich verbunden!")
                 break
@@ -116,11 +117,16 @@ class Manager:
                     raise
 
     def close_api(self):
-        for bolt in self.bolts:
+        for bolt in self._bolts:
             bolt.toy_api.__exit__(None, None, None)
 
-    def start(self, values, choreography):
-        self.choreography.start_choreography(values, choreography)
+    def start(self, values = None, choreo = None):
+        self._main_choreo.values = self.values
+        if not values:
+            values = self.values
+        if not choreo:
+            choreo = self.choreo
+        self._main_choreo.start_choreography(values, choreo)
         return "ok"
 
 

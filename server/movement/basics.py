@@ -1,9 +1,11 @@
+import logging
 import math
 import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+logger = logging.getLogger(__name__)
 
 def calculate_hermite_curve(p0, p1, m0, m1, anzahl_punkte):
     """
@@ -155,14 +157,14 @@ def drive_hermite_curve(robot, points, initial_heading=None):
     try:
         tangents = calculate_tangents(points, initial_heading=initial_heading)
 
-        spline = calculate_hermite_spline(points, tangents, len(points))
+        # spline = calculate_hermite_spline(points, tangents, len(points))
         # commands = calculate_commands(spline, compass_offset=compass_offset)
         commands = calculate_commands(points, compass_offset=robot.offset)
 
         _basic_drive(robot.toy_api, commands)
         robot.update_position(points[-1])
     except Exception as e:
-        print(f"Exception in drive_hermite_curve: {e}")
+        logger.exception(f"Exception in drive_hermite_curve: {e}")
         raise
 
 
@@ -189,10 +191,12 @@ def _basic_drive(robot_api, commands, speed=50):
 
     first_distance, first_angle = commands[0]
 
-    robot_api.roll(first_angle, 0, 1)
-    start_distance = robot_api.get_distance()
+    try:
+        robot_api.roll(first_angle, 0, 1)
 
-    control_distance(robot_api, commands, speed)
+        control_distance(robot_api, commands, speed)
+    except Exception as e:
+        logger.exception(e)
 
 
 def control_distance(robot, commands, speed):
@@ -203,7 +207,6 @@ def control_distance(robot, commands, speed):
     for distance, angle in commands:
         time.sleep(0.5)
         robot.set_heading(angle)
-        print(f"{robot._SpheroEduAPI__toy.name}{angle}")
         time.sleep(0.5)
         start_distance = robot.get_distance()  # robot setzt heading
         cur_distance = 0

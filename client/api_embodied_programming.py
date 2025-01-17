@@ -40,11 +40,11 @@ class EmbodiedProgrammingAPI:
         time.sleep(20)
 
     def swap_positions(self, values):
-        message = self.messaging.create_message(choreography="dont_swap", values=values)
+        message = self.messaging.create_message(choreography="swap", values=values, message="custom")
 
         print(self.client.communicate_with_server(message))
 
     def dont_swap_positions(self, values):
-        message = self.messaging.create_message( choreography="dont_swap", values=values)
+        message = self.messaging.create_message( choreography="dont_swap", values=values, message="custom")
 
         print(self.client.communicate_with_server(message))

@@ -2,6 +2,7 @@ from server.choreographies.ChoreographyInterface import ChoreographyInterface
 from server.choreographies.SwapChoreo import TooManyRobotsForChoreoException
 from server.ledcontrol import LEDControl
 from server.movement.movement_strategies.CompareNoChangeStrategy import CompareNoChangeStrategy
+from server.movement.movement_strategies.DriveToCompareStrategy import DriveToCompareStrategy
 from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
 
 
@@ -15,6 +16,13 @@ class DontSwapChoreo(ChoreographyInterface):
             raise TooManyRobotsForChoreoException(robot_group)
 
         end_points = [robot_group[1].position, robot_group[0].position]
+
+        # nach vorne fahren -> drive to compare
+        for bolt in robot_group:
+            self.ledcontrol.highlight_character(bolt, bolt.value)
+
+        drive_to_compare = DriveToCompareStrategy()
+        drive_to_compare.drive(robot_group, [])
 
         # compare no change
         compare_no_change = CompareNoChangeStrategy()

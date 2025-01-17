@@ -23,12 +23,18 @@ class MainChoreography:
     def __init__(self):
         self.bolt_group = BoltGroup()
         self.ledcontrol = LEDControl()
+        self.values = []
+        self.initial = True
 
     def set_bolt_group(self, robots):
         for bolt in robots:
             self.bolt_group.assign_bolt(bolt)
 
     def start_choreography(self, values, choreography):
+
+        if self.initial:
+            self.set_bolts_and_values()
+            self.initial = False
 
         # roboter zu values identifizieren
         robot_group = BoltGroup()
@@ -46,3 +52,8 @@ class MainChoreography:
             if bolt.value == target_value:
                 return bolt
         return None
+
+    def set_bolts_and_values(self):
+        for bolt in self.bolt_group:
+            bolt.calibrate()
+            self.ledcontrol.show_character(bolt, bolt.value)
