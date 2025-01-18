@@ -21,7 +21,7 @@ class Manager:
         self.values = None
         self._led_control = LEDControl()
 
-        self.executor = ThreadPoolExecutor()
+        self._executor = ThreadPoolExecutor()
 
     def _check_robot_in_list(self, name) -> Bolt:
         """
@@ -56,7 +56,7 @@ class Manager:
     def _set_robot(self, name: str, position, value):
 
         try:
-            future = self.executor.submit(self._find_toy_blocking, name)
+            future = self._executor.submit(self._find_toy_blocking, name)
 
             toy = future.result()
 
@@ -79,7 +79,8 @@ class Manager:
             print(f"manager: toy {name} not found")
             raise
 
-    def _find_toy_blocking(self, name: str):
+    @staticmethod
+    def _find_toy_blocking(name: str):
         return scanner.find_toy(toy_name=name)
 
     def _open_api(self, bolt: Bolt):
@@ -120,7 +121,7 @@ class Manager:
         for bolt in self._bolts:
             bolt.toy_api.__exit__(None, None, None)
 
-    def start(self, values = None, choreo = None):
+    def start(self, values=None, choreo=None):
         self._main_choreo.values = self.values
         if not values:
             values = self.values
