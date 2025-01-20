@@ -8,7 +8,7 @@ from server.movement.movement_strategies.MovementStrategy import MovementStrateg
 logger = logging.getLogger(__name__)
 
 
-class InLineXStrategy(MovementStrategy):
+class InLineYStrategy(MovementStrategy):
     def __init__(self):
         self.y_coord = 0
         self.points = []

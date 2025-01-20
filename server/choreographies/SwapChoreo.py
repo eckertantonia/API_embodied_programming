@@ -37,7 +37,6 @@ class SwapChoreo(ChoreographyInterface):
         for bolt in robot_group:
             self.ledcontrol.show_character(bolt, bolt.value)
 
-        pass
 
 class TooManyRobotsForChoreoException(Exception):
     def __init__(self, robots):

@@ -24,36 +24,36 @@ class MainChoreography:
         self.bolt_group = BoltGroup()
         self.ledcontrol = LEDControl()
         self.values = []
-        self.initial = True
+        self._initial = True
 
-    def set_bolt_group(self, robots):
+    def _set_bolt_group(self, robots):
         for bolt in robots:
             self.bolt_group.assign_bolt(bolt)
 
     def start_choreography(self, values, choreography):
 
-        if self.initial:
-            self.set_bolts_and_values()
-            self.initial = False
+        if self._initial:
+            self._set_bolts_and_values()
+            self._initial = False
 
         # roboter zu values identifizieren
         robot_group = BoltGroup()
 
         for value in values:
-            robot = self.get_robot_with_value(value)
+            robot = self._get_robot_with_value(value)
             robot_group.assign_bolt(robot)
 
         # bewegungen zu message finden
         _get_choreography_instance(choreography).start_choreo(robot_group, values)
 
-    def get_robot_with_value(self, target_value):
+    def _get_robot_with_value(self, target_value):
 
         for bolt in self.bolt_group:
             if bolt.value == target_value:
                 return bolt
         return None
 
-    def set_bolts_and_values(self):
+    def _set_bolts_and_values(self):
         for bolt in self.bolt_group:
             bolt.calibrate()
             self.ledcontrol.show_character(bolt, bolt.value)
