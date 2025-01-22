@@ -5,12 +5,12 @@ import server.movement.basics as basic_moves
 from server.bolt import Bolt
 from server.boltgroup import BoltGroup
 from server.ledcontrol import LEDControl
-from server.movement.movement_strategies.MovementStrategy import MovementStrategy
+from server.movement.movement_strategies.MovementInterface import MovementStrategy
 
 logger = logging.getLogger(__name__)
 
 
-class CompareNoChangeStrategy(MovementStrategy):
+class DriveToCompareStrategy(MovementStrategy):
     def __init__(self):
         # self.points = []
         self.robot_1: Bolt = None
@@ -30,6 +30,7 @@ class CompareNoChangeStrategy(MovementStrategy):
 
         sorted_robots = sorted(robots, key=lambda r: r.position[0])
         self.robot_1, self.robot_2 = sorted_robots
+
         self._calculate_simple_points()
 
         try:
@@ -40,41 +41,44 @@ class CompareNoChangeStrategy(MovementStrategy):
             raise
 
     def _calculate_simple_points(self):
-        x1, y1 = self.robot_1.position
-        p1_0 = (x1, y1)
-        p1_5 = (x1, y1)
-        self.robot_1_coords = [p1_0, p1_5]
 
-        x2, y2 = self.robot_1.position
-        p2_0 = (x2, y2)
-        p2_5 = (x2, y2)
+        x_0, y_0 = self.robot_1.position
+        x_1, y_1 = self.robot_2.position
 
-        self.robot_2_coords = [p2_0, p2_5]
+        y_final = y_0 + 1
+        # robot 1
+        p1_0 = (x_0, y_0)
+        p1_1 = (x_0, y_final)
 
+        self.robot_1_coords = [p1_0, p1_1]
+
+        # robot 2
+        p2_0 = (x_1, y_1)
+        p2_1 = (x_1, y_final)
+
+        self.robot_2_coords = [p2_0, p2_1]
 
     def _calculate_points(self):
 
-        # robot 1
-        x1, y1 = self.robot_1.position
-        p1_0 = (x1, y1)
-        p1_1 = (x1, y1-1)
-        p1_2 = (x1-2, y1-1)
-        p1_3 = (x1-2, y1 +1)
-        p1_4 = (x1, y1+1)
-        p1_5 = (x1, y1)
+        x_0, y_0 = self.robot_1.position
+        x_1, y_1 = self.robot_2.position
 
-        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5]
+        y_final = y_0 + 2
+        # robot 1
+        p1_0 = (x_0, y_0)
+        p1_1 = (x_0, y_final)
+        p1_2 = (x_0 + ((x_1 - x_0) / 4), y_final)
+        p1_3 = p1_1
+
+        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3]
 
         # robot 2
-        x2, y2 = self.robot_1.position
-        p2_0 = (x2, y2)
-        p2_1 = (x2, y2-1)
-        p2_2 = (x2+2, y2-1)
-        p2_3 = (x2+2, y2+1)
-        p2_4 = (x2, y2+1)
-        p2_5 = (x2, y2)
+        p2_0 = (x_1, y_1)
+        p2_1 = (x_1, y_final)
+        p2_2 = (x_1 - ((x_1 - x_0) / 4), y_final)
+        p2_3 = p2_1
 
-        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3,p2_4, p2_5]
+        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3]
 
     def _execute_threads(self, robots, target_method):
         """
@@ -101,3 +105,4 @@ class CompareNoChangeStrategy(MovementStrategy):
 
         for thread in threads_part_2:
             thread.join()
+

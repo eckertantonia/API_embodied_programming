@@ -29,7 +29,7 @@ class MessagingService:
 
     def create_disconnect_message(self):
         payload = {
-            "robots": [],
+            # "robots": [], #
             "choreography": "",
             "values": [],
             "message": "stopp"

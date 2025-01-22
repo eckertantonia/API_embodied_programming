@@ -1,25 +1,22 @@
 import logging
 import threading
 
-from spherov2.controls import PacketDecodingException
-
 import server.movement.basics as basic_moves
 from server.bolt import Bolt
 from server.boltgroup import BoltGroup
 from server.ledcontrol import LEDControl
-from server.movement.movement_strategies.MovementStrategy import MovementStrategy
+from server.movement.movement_strategies.MovementInterface import MovementStrategy
 
 logger = logging.getLogger(__name__)
 
 
-class CompareWithChangeStrategy(MovementStrategy):
+class CompareNoChangeStrategy(MovementStrategy):
     def __init__(self):
-        self.points = []
+        # self.points = []
         self.robot_1: Bolt = None
         self.robot_2: Bolt = None
         self.robot_1_coords = []
         self.robot_2_coords = []
-        self.ledcontrol = LEDControl()
 
     def drive(self, robots: BoltGroup, points: []):
         """
@@ -29,13 +26,13 @@ class CompareWithChangeStrategy(MovementStrategy):
         :param points: int-Tupel, Ziel-Koordinaten der Elemente aus robots in Reihenfolge der Elemente
         :raises Exception
         """
-        self.points = points
+        # self.points = points
 
         sorted_robots = sorted(robots, key=lambda r: r.position[0])
         self.robot_1, self.robot_2 = sorted_robots
+        self._calculate_simple_points()
 
         try:
-            self._calculate_simple_points()
             self._execute_threads(robots, basic_moves.drive_hermite_curve)
 
         except Exception as e:
@@ -43,60 +40,41 @@ class CompareWithChangeStrategy(MovementStrategy):
             raise
 
     def _calculate_simple_points(self):
-        final_pos_robot_1 = self.robot_2.position
-        final_pos_robot_2 = self.robot_1.position
-
         x1, y1 = self.robot_1.position
-        x2, y2 = self.robot_2.position
-
         p1_0 = (x1, y1)
-        p1_1 = (x1, y1 + 0.5)
-        p1_2 = (x2, y2 + 0.5)
-        p1_3 = (x2, y2)
+        p1_5 = (x1, y1)
+        self.robot_1_coords = [p1_0, p1_5]
 
-        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3]
-
+        x2, y2 = self.robot_1.position
         p2_0 = (x2, y2)
-        p2_1 = (x1, y1)
+        p2_5 = (x2, y2)
 
-        self.robot_2_coords = [p2_0, p2_1]
+        self.robot_2_coords = [p2_0, p2_5]
 
 
     def _calculate_points(self):
 
-        final_pos_robot_1 = self.robot_2.position
-        final_pos_robot_2 = self.robot_1.position
-
-        x1, y1 = self.robot_1.position
-        x2, y2 = self.robot_2.position
-
-        distance_x1_x2 = abs(x2 -x1)
-
         # robot 1
-
+        x1, y1 = self.robot_1.position
         p1_0 = (x1, y1)
-        p1_1 = (x1, y1+1)
-        p1_2 = (x1+distance_x1_x2, y1+1)
-        p1_3 = (x1+distance_x1_x2, y1-1)
-        p1_4 = (x1, y1-1)
-        p1_5 = p1_1
-        p1_6 = p1_2
-        p1_7 = final_pos_robot_1
+        p1_1 = (x1, y1-1)
+        p1_2 = (x1-2, y1-1)
+        p1_3 = (x1-2, y1 +1)
+        p1_4 = (x1, y1+1)
+        p1_5 = (x1, y1)
 
-        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5, p1_6, p1_7]
+        self.robot_1_coords = [p1_0, p1_1, p1_2, p1_3, p1_4, p1_5]
 
         # robot 2
-
+        x2, y2 = self.robot_1.position
         p2_0 = (x2, y2)
-        p2_1 = (x2, y2 - 1)
-        p2_2 = (x2 - distance_x1_x2, y2 -1)
-        p2_3 = (x2 - distance_x1_x2, y2 + 1)
-        p2_4 = (x2, y2 + 1)
-        p2_5 = p2_1
-        p2_6 = p2_2
-        p2_7 = final_pos_robot_2
+        p2_1 = (x2, y2-1)
+        p2_2 = (x2+2, y2-1)
+        p2_3 = (x2+2, y2+1)
+        p2_4 = (x2, y2+1)
+        p2_5 = (x2, y2)
 
-        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3, p2_4, p2_5, p2_6, p2_7]
+        self.robot_2_coords = [p2_0, p2_1, p2_2, p2_3,p2_4, p2_5]
 
     def _execute_threads(self, robots, target_method):
         """
@@ -118,17 +96,8 @@ class CompareWithChangeStrategy(MovementStrategy):
             thread_r.start()
             thread_f.start()
 
-            for thread in threads_part_2:
-                thread.join()
-
-            self.ledcontrol.green_character(self.robot_1, self.robot_1.value)
-            self.ledcontrol.green_character(self.robot_2, self.robot_2.value)
-
-        except TimeoutError or PacketDecodingException as e:
-            logger.error("Error in Bleak Connection (BLE)")
-            raise e
         except Exception as e:
             logger.exception(f"RequestStrategy: Error in threads: {e}")
 
-
-
+        for thread in threads_part_2:
+            thread.join()

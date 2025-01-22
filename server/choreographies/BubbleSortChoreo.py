@@ -1,10 +1,10 @@
 from server.boltgroup import BoltGroup
 from server.choreographies.ChoreographyInterface import ChoreographyInterface
 from server.ledcontrol import LEDControl
-from server.movement.movement_strategies.CompareNoChangeStrategy import CompareNoChangeStrategy
-from server.movement.movement_strategies.CompareWithChangeStrategy import CompareWithChangeStrategy
-from server.movement.movement_strategies.DriveToCompareStrategy import DriveToCompareStrategy
-from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
+from server.movement.movement_strategies.CompareNoChange import CompareNoChangeStrategy
+from server.movement.movement_strategies.CompareWithChange import CompareWithChangeStrategy
+from server.movement.movement_strategies.DriveToCompare import DriveToCompareStrategy
+from server.movement.movement_strategies.MoveForward import MoveForwardStrategy
 
 
 class BubbleSortChoreo(ChoreographyInterface):

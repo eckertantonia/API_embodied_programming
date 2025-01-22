@@ -10,7 +10,7 @@ if __name__ == "__main__":
     # mit choreo
     choreo = "bubblesort"
 
-    embodied_programming_api.select_choreography(choreo, [3, 6, 2, 5, 7])
+    embodied_programming_api.select_choreography(choreo, [2, 6, 2, 5, 7]) # was passiert wenn 2 gleiche zahlen in liste?
 
     embodied_programming_api.start_choreography()
 

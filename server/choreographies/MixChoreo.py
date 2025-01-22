@@ -6,14 +6,14 @@ from spherov2.types import Color
 from server.bolt import Bolt
 from server.boltgroup import BoltGroup
 from server.choreographies.ChoreographyInterface import ChoreographyInterface
-from server.movement.movement_strategies.CompareNoChangeStrategy import CompareNoChangeStrategy
-from server.movement.movement_strategies.DriveToCompareStrategy import DriveToCompareStrategy
-from server.movement.movement_strategies.InLineXStrategy import InLineXStrategy
-from server.movement.movement_strategies.MoveForwardStrategy import MoveForwardStrategy
-from server.movement.movement_strategies.MovementStrategy import MovementStrategy
+from server.movement.movement_strategies.CompareNoChange import CompareNoChangeStrategy
+from server.movement.movement_strategies.DriveToCompare import DriveToCompareStrategy
+from server.movement.movement_strategies.InLineX import InLineXStrategy
+from server.movement.movement_strategies.MoveForward import MoveForwardStrategy
+from server.movement.movement_strategies.MovementInterface import MovementStrategy
 from server.ledcontrol import LEDControl
-from server.movement.movement_strategies.RequestStrategy import RequestStrategy
-from server.movement.movement_strategies.CompareWithChangeStrategy import CompareWithChangeStrategy
+from server.movement.movement_strategies.Request import RequestStrategy
+from server.movement.movement_strategies.CompareWithChange import CompareWithChangeStrategy
 
 
 class MixChoreo(ChoreographyInterface):

@@ -3,7 +3,7 @@ import threading
 
 import server.movement.basics as basic_moves
 from server.boltgroup import BoltGroup
-from server.movement.movement_strategies.MovementStrategy import MovementStrategy
+from server.movement.movement_strategies.MovementInterface import MovementStrategy
 
 logger = logging.getLogger(__name__)
 
