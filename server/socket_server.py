@@ -47,9 +47,6 @@ def run_server():
         client_socket, client_address = server.accept()
         print(f"Accepted connection from {client_address[0]}:{client_address[1]}")
 
-        # threading um mehrere clients zu akzeptieren
-        # thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-        # thread.start()
         handle_client(client_socket, client_address, messaging_service)
 
     except Exception as e:

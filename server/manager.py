@@ -24,12 +24,6 @@ class Manager:
         self._executor = ThreadPoolExecutor()
 
     def _check_robot_in_list(self, name) -> Bolt:
-        """
-        Sucht in self.bolts nach Bolt mit bestimmtem Namen.
-
-        :param name: string
-        :return: Bolt
-        """
         return next((bolt for bolt in self._bolts if bolt.name == name), None)
 
     def connect_bolts(self):
@@ -84,12 +78,6 @@ class Manager:
         return scanner.find_toy(toy_name=name)
 
     def _open_api(self, bolt: Bolt):
-        """
-        Funktion zum Öffnen der dauerhaften Bluetooth-Verbindung zum Bolt-Roboter.
-        Wenn die Verbindung nicht funktioniert, wird der Verbindungs-Versuch 3 mal wiederholt.
-
-        :param bolt: Bolt Instanz, die Verbindung zum Roboter hält
-        """
         retries = 0
         max_retries = 4
         for attempt in range(max_retries):

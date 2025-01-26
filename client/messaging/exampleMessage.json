@@ -1,6 +1,8 @@
 {
-    "robots": ["SB-8EA0", "SB-51FA", "SB-231B", "SB-3DAB", "SB-025F"],
-    "choreography": "mix",
-    "strategy": "circle",
-    "message": ""
+    "type": "command",
+    "payload":{
+        "choreography": "bubblesort",
+        "values": [3, 5, 2, 8, 4],
+        "message": ""
+    }
 }

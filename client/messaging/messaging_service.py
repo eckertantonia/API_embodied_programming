@@ -11,11 +11,6 @@ class MessagingService:
             "payload": payload
         })
 
-
-    def generate_request_id(self):
-        return f"{random.randint(100000, 999999)}"
-
-
     def create_hardcoded_message(self):
         exampleFilePath = os.path.join(os.path.dirname(__file__), "exampleMessage.json")
         with open(exampleFilePath, 'r', encoding='utf-8') as file:

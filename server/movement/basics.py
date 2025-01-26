@@ -169,25 +169,11 @@ def drive_hermite_curve(robot, points, initial_heading=None):
 
 
 def _basic_drive(robot_api, commands, speed=50):
-    """
-    TODO: speed 50 ist ein bisschen sehr gemaechlich
-    holt Schwung und bremst ab
-    :param robot_api:
-    :param commands:
-    :return:
-    """
 
     # Gesamtdistanz berechnen
     total_distance = 0
     for i in commands:
         total_distance += i[0]
-
-    calculated_distance = total_distance  # in cm
-
-    # Falls die Distanz 0 ist, beende die Funktion
-    if total_distance == 0:
-        print("Gesamtdistanz ist 0. Keine Bewegung erforderlich.")
-        return
 
     first_distance, first_angle = commands[0]
 

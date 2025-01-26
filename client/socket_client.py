@@ -2,7 +2,6 @@ import json
 import socket
 from json import JSONDecodeError
 
-import client.messaging.messaging_service as messaging
 from client.messaging.messaging_service import MessagingService
 
 

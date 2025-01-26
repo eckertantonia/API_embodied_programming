@@ -81,24 +81,6 @@ class MixChoreo(ChoreographyInterface):
         for bolt in bolt_group:
             bolt.calibrate()
             self.led_control.show_character(bolt, bolt.value)
-            # if bolt.name == "SB-8EA0":
-            #     bolt.update_position(positions[0])
-            #     self.led_control.show_character(bolt, bolt.value)
-            # elif bolt.name == "SB-51FA":
-            #     bolt.update_position(positions[1])
-            #     self.led_control.show_character(bolt,  bolt.value)
-            #     self.circle_group.assign_bolt(bolt)
-            # elif bolt.name == "SB-231B":
-            #     bolt.update_position(positions[2])
-            #     self.led_control.show_character(bolt,  bolt.value)
-            #     self.circle_group.assign_bolt(bolt)
-            # elif bolt.name == "SB-3DAB":
-            #     bolt.update_position(positions[3])
-            #     self.led_control.show_character(bolt,  bolt.value)
-            #     # self.circle_group.assign_bolt(bolt)
-            # elif bolt.name == "SB-025F":
-            #     bolt.update_position(positions[4])
-            #     self.led_control.show_character(bolt,  bolt.value)
 
     def move_forward(self, bolt:Bolt):
 
